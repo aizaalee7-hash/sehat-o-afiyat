@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEHAT O AFEYAT | صحت و عافیت — Blood Donor Matching & AI Report Reader</title>
+<meta name="description" content="Connect with blood donors in Pakistan, understand your medical reports with AI, and find hospital and NGO support. Demo build.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4C22 18 12 28 12 40a20 20 0 0040 0C52 28 42 18 32 4z' fill='%2359171B'/%3E%3Cpath d='M29 32h6v6h6v6h-6v6h-6v-6h-6v-6h6z' fill='%23FED7B8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* SEHAT O AFEYAT — صحت و عافیت | Burgundy & warm beige healthcare theme */
+:root{
+  --burgundy:#59171B; --burgundy-2:#7a2228; --beige:#FED7B8; --cream:#F8F1E9; --rose:#C98286;
+  --white:#fff; --text:#302729; --muted:#78696A; --pale:#F2E1DD; --line:#e8d6cd;
+  --ok:#2f6b4f; --ok-bg:#e3f1ea; --warn:#8a5a12; --warn-bg:#fbeccd; --bad:#9b2226; --bad-bg:#f8dcdc; --info:#3d4f7a; --info-bg:#e4e9f5;
+  --r:16px; --r-sm:10px; --shadow:0 1px 2px rgba(89,23,27,.06),0 8px 24px rgba(89,23,27,.07);
+  --serif:'Playfair Display',Georgia,serif; --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --urdu:'Noto Nastaliq Urdu','Jameel Noori Nastaleeq',serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);color:var(--text);background:var(--cream);line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--serif);color:var(--burgundy);line-height:1.2;margin:0 0 .5em}
+h1{font-size:clamp(2rem,4.5vw,3.2rem)} h2{font-size:clamp(1.5rem,3vw,2.1rem)} h3,.h3{font-size:1.2rem;font-family:var(--serif);color:var(--burgundy)}
+h4{font-size:1rem;font-family:var(--sans);font-weight:600}
+p{margin:0 0 1em} a{color:var(--burgundy)}
+img,svg{max-width:100%}
+.wrap{width:min(1180px,100% - 2rem);margin-inline:auto}
+.narrow{width:min(820px,100% - 2rem);margin-inline:auto}
+.narrow-lg{width:min(960px,100% - 2rem);margin-inline:auto}
+.muted{color:var(--muted)} .small{font-size:.875rem} .link{font-weight:600;text-decoration:none}.link:hover{text-decoration:underline}
+.eyebrow{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--rose);font-weight:700;margin-bottom:.6rem}
+.skip{position:absolute;left:-999px;top:0;background:var(--burgundy);color:#fff;padding:.6rem 1rem;z-index:200}.skip:focus{left:0}
+:focus-visible{outline:3px solid var(--rose);outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+
+/* header */
+.site-header{position:sticky;top:0;z-index:50;background:rgba(248,241,233,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.header-in{display:flex;align-items:center;gap:1rem;min-height:72px}
+.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--burgundy)}
+.brand-mark{width:38px;height:38px;color:var(--burgundy);flex:none}
+.brand-text{display:flex;flex-direction:column;line-height:1.15}
+.brand-ur{font-family:var(--urdu);font-size:1.35rem;color:var(--burgundy);line-height:1.7}
+.brand-en{font-size:.62rem;letter-spacing:.22em;font-weight:700;color:var(--rose)}
+.main-nav{display:flex;gap:.15rem;margin-inline:auto}
+.main-nav a{padding:.5rem .7rem;border-radius:999px;text-decoration:none;color:var(--text);font-size:.88rem;font-weight:500;white-space:nowrap}
+.main-nav a:hover{background:var(--pale)} .main-nav a.active{background:var(--burgundy);color:#fff}
+.header-actions{display:flex;align-items:center;gap:.5rem}
+.nav-mobile{display:none}
+@media(max-width:640px){.nav-mobile{display:block}}
+.menu-btn{display:none;background:none;border:1px solid var(--line);border-radius:10px;width:44px;height:44px;padding:10px;cursor:pointer;margin-left:auto;flex-direction:column;justify-content:space-between}
+.menu-btn span{display:block;height:2px;background:var(--burgundy);border-radius:2px}
+.icon-btn{position:relative;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--burgundy);cursor:pointer;display:grid;place-items:center}
+.icon-btn svg{width:20px;height:20px}
+.badge-dot{position:absolute;top:-4px;right:-4px;background:var(--burgundy);color:#fff;font-size:.65rem;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;font-weight:700;padding:0 4px}
+.notif-wrap{position:relative}
+.notif-panel{position:absolute;right:0;top:50px;width:min(360px,90vw);background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);max-height:420px;overflow:auto;padding:.5rem}
+.notif-panel h4{padding:.5rem .6rem;margin:0}
+.notif-item{padding:.6rem;border-radius:var(--r-sm);font-size:.88rem;border-bottom:1px solid var(--pale)}
+.notif-item.unread{background:var(--cream)} .notif-item time{display:block;color:var(--muted);font-size:.75rem}
+.demo-banner{background:var(--burgundy);color:var(--beige);font-size:.8rem;text-align:center;padding:.45rem 1rem}
+.demo-banner strong{color:#fff}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.1rem;border-radius:999px;font:600 .9rem var(--sans);border:1.5px solid transparent;cursor:pointer;text-decoration:none;transition:background .15s,transform .15s,box-shadow .15s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--burgundy);color:#fff}.btn-primary:hover{background:var(--burgundy-2);box-shadow:0 6px 16px rgba(89,23,27,.25)}
+.btn-outline{background:transparent;border-color:var(--burgundy);color:var(--burgundy)}.btn-outline:hover{background:var(--burgundy);color:#fff}
+.btn-ghost{background:transparent;color:var(--burgundy)}.btn-ghost:hover{background:var(--pale)}
+.btn-danger{background:var(--bad-bg);color:var(--bad)}.btn-danger:hover{background:#f1c4c4}
+.btn-sm{padding:.35rem .75rem;font-size:.8rem}.btn-lg{padding:.8rem 1.5rem;font-size:1rem}
+.btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+/* layout */
+.view{padding-bottom:3rem;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-head{padding:2.5rem 0 1.5rem}.page-head h1{font-size:clamp(1.8rem,3.5vw,2.6rem)}
+.section{padding:3rem 0 0}
+.section-head{margin-bottom:1.5rem}.section-head.split{display:flex;justify-content:space-between;align-items:end;gap:1rem}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:1.4rem;box-shadow:var(--shadow)}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.split-layout{display:grid;grid-template-columns:310px 1fr;gap:1.5rem;align-items:start}
+.row-gap{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.5rem}
+.note,.note-box{background:var(--pale);border-radius:var(--r-sm);padding:.8rem 1rem;color:var(--burgundy);font-size:.85rem}
+.note-box{margin-bottom:1rem}
+
+/* hero */
+.hero{background:linear-gradient(160deg,var(--cream) 0%,var(--pale) 100%);padding:3rem 0 5rem;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:2rem;align-items:center}
+.hero-ur{font-family:var(--urdu);font-size:clamp(2.2rem,5vw,3.4rem);color:var(--burgundy);margin:0 0 .2rem;line-height:1.9}
+.hero h1 em{font-style:italic;color:var(--rose)}
+.lead{font-size:1.15rem;color:var(--muted);max-width:34rem}
+.hero-cta{display:flex;flex-wrap:wrap;gap:.8rem;margin:1.5rem 0}
+.trust-row{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;font-size:.85rem;color:var(--muted)}
+.trust-row li{display:flex;align-items:center;gap:.3rem}.trust-row svg{width:16px;height:16px;color:var(--burgundy)}
+.hero-art svg{width:100%;height:auto;filter:drop-shadow(0 20px 30px rgba(89,23,27,.15))}
+.quick-card{margin-top:-3rem;position:relative}
+.quick-form{display:grid;grid-template-columns:1fr 1fr auto;gap:1rem;align-items:end;margin-top:1rem}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
+.chip{border:1.5px solid var(--line);background:#fff;color:var(--burgundy);font:700 .95rem var(--sans);padding:.5rem 1rem;border-radius:999px;cursor:pointer;min-width:56px}
+.chip:hover{border-color:var(--rose)} .chip[aria-checked="true"]{background:var(--burgundy);color:#fff;border-color:var(--burgundy)}
+
+/* steps / cards */
+.steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.steps .card h3{margin-top:.8rem}.steps p{color:var(--muted);font-size:.92rem;margin:0}
+.step-n{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--beige);color:var(--burgundy);font-weight:700}
+.ai-intro{display:grid;grid-template-columns:1.3fr 1fr;gap:2rem;align-items:center;background:linear-gradient(135deg,#fff,var(--pale))}
+.ai-points{list-style:none;padding:0;margin:0;display:grid;gap:.7rem}
+.ai-points li{display:flex;gap:.7rem;align-items:center;background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:.7rem 1rem;font-weight:500}
+.ai-points svg{width:22px;height:22px;color:var(--burgundy);flex:none}
+.collab{display:flex;justify-content:space-between;align-items:center;gap:1.5rem;background:var(--burgundy);color:var(--beige);border-color:var(--burgundy)}
+.collab h2,.collab h3,.collab .eyebrow{color:#fff}.collab p{color:var(--beige);margin:0}
+.collab .btn-outline{border-color:var(--beige);color:var(--beige)}.collab .btn-outline:hover{background:var(--beige);color:var(--burgundy)}
+.collab .btn-primary{background:var(--beige);color:var(--burgundy)}.collab-cta{display:flex;gap:.6rem;flex-wrap:wrap}
+.view .wrap>.card.collab{margin-top:1.5rem}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:1.1rem 1.2rem;box-shadow:var(--shadow)}
+.stat b{display:block;font:700 2rem var(--serif);color:var(--burgundy)}.stat span{color:var(--muted);font-size:.85rem}
+.small-stats{margin:1rem 0}.small-stats .stat b{font-size:1.5rem}
+
+/* forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.2rem}
+.form-grid .full,.full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:.3rem;font-size:.88rem;font-weight:600;color:var(--text)}
+.field.inline{max-width:280px;margin:1rem 0}
+input,select,textarea{font:400 .95rem var(--sans);color:var(--text);background:#fff;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:.6rem .75rem;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--burgundy);box-shadow:0 0 0 3px rgba(201,130,134,.3)}
+input[disabled]{background:var(--pale);color:var(--muted)}
+input[type=checkbox]{width:auto;accent-color:var(--burgundy)}
+.check{display:flex;gap:.6rem;align-items:flex-start;font-size:.9rem;margin:.8rem 0;cursor:pointer}.check input{margin-top:.25rem;width:18px;height:18px}
+.err{color:var(--bad);font-size:.8rem;font-weight:500;min-height:0}
+.field.invalid input,.field.invalid select{border-color:var(--bad)}
+.filters{position:sticky;top:90px;display:grid;gap:.8rem}.filters h2{margin:0}
+.filter-row{display:flex;flex-wrap:wrap;gap:1rem;align-items:end;margin-bottom:1rem}.filter-row .field{flex:1;min-width:150px}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:.25rem;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok)}.b-warn{background:var(--warn-bg);color:var(--warn)}.b-bad{background:var(--bad-bg);color:var(--bad)}.b-info{background:var(--info-bg);color:var(--info)}.b-mute{background:var(--pale);color:var(--muted)}
+.group-badge{display:grid;place-items:center;width:52px;height:52px;border-radius:14px;background:var(--burgundy);color:#fff;font:700 1.15rem var(--serif);flex:none}
+
+/* donor card */
+.donor-card{display:flex;flex-direction:column;gap:.7rem}
+.dc-top{display:flex;gap:.9rem;align-items:center}.dc-top h3{margin:0;font-size:1.05rem}
+.dc-meta{display:flex;flex-wrap:wrap;gap:.4rem}
+.loc{display:flex;gap:.3rem;align-items:center;color:var(--muted);font-size:.85rem}.loc svg{width:15px;height:15px}
+.why{background:var(--cream);border-radius:var(--r-sm);padding:.6rem .8rem;font-size:.8rem;color:var(--muted)}
+.why b{color:var(--burgundy)}.why ul{margin:.3rem 0 0;padding-left:1.1rem}
+.score{margin-left:auto;text-align:right;font-size:.7rem;color:var(--muted)}.score b{display:block;font:700 1.1rem var(--serif);color:var(--burgundy)}
+.result-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);background:#fff;border:1.5px dashed var(--line);border-radius:var(--r);grid-column:1/-1}
+.empty h3{margin-bottom:.3rem}
+
+/* tabs */
+.tabs{display:flex;gap:.4rem;margin:1rem 0;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;padding:.7rem 1.1rem;font:600 .92rem var(--sans);color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--burgundy);border-color:var(--burgundy)}
+
+/* tables */
+.table-wrap{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;background:var(--pale);color:var(--burgundy);font-weight:600;padding:.7rem .9rem;white-space:nowrap}
+td{padding:.7rem .9rem;border-top:1px solid var(--pale);vertical-align:middle}
+tr:hover td{background:#fdf9f5}
+td select{padding:.3rem .5rem;font-size:.82rem;min-width:130px}
+
+/* list rows (history) */
+.rec{display:flex;gap:1rem;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.2rem;margin-bottom:.7rem;flex-wrap:wrap}
+.rec h3{margin:0;font-size:1rem}.rec .meta{color:var(--muted);font-size:.85rem}
+.rec-main{display:flex;gap:1rem;align-items:center}
+
+/* dashboard */
+.dash-head{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:1rem;padding:2.5rem 0 1.2rem}
+.dash-head h1{margin:0;font-size:clamp(1.7rem,3vw,2.3rem)}
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.2rem;margin-top:1.2rem}
+.dash-grid.even{grid-template-columns:1fr 1fr}
+.panel h3{margin-bottom:.8rem}
+.list-plain{list-style:none;padding:0;margin:0}.list-plain li{padding:.6rem 0;border-bottom:1px solid var(--pale);font-size:.9rem;display:flex;justify-content:space-between;gap:.8rem;align-items:center}
+.list-plain li:last-child{border:none}
+.bars{display:grid;gap:.6rem}.bar-row{display:grid;grid-template-columns:110px 1fr 32px;gap:.6rem;align-items:center;font-size:.82rem}
+.bar{height:12px;background:var(--pale);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--burgundy));border-radius:6px}
+.toolbar{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:.8rem}.toolbar input{max-width:280px}.toolbar select{max-width:200px}
+
+/* report */
+.dropzone{position:relative;border:2px dashed var(--rose);border-radius:var(--r);background:var(--cream);padding:2rem;text-align:center;transition:.15s}
+.dropzone.drag{background:var(--pale);border-color:var(--burgundy)}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-ic{width:44px;height:44px;color:var(--burgundy)}
+.file-info{background:var(--pale);border-radius:var(--r-sm);padding:.6rem .9rem;margin:.8rem 0;font-size:.9rem}
+.status-line{margin-top:1rem;font-size:.92rem;color:var(--muted);min-height:1.4em}
+.status-line.error{color:var(--bad)}.status-line.ok{color:var(--ok)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--rose);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:.4rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+.report-result{margin-top:1.5rem;display:grid;gap:1rem}
+.rr-card h3{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.tag{font:600 .68rem var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:.15rem .55rem;border-radius:999px}
+.tag-ex{background:var(--info-bg);color:var(--info)}.tag-ai{background:var(--pale);color:var(--burgundy)}
+.ur-text{direction:rtl;text-align:right;font-family:var(--urdu);line-height:2.3;font-size:1.05rem;background:var(--cream);padding:1rem;border-radius:var(--r-sm)}
+.flag-out{color:var(--bad);font-weight:700}
+.terms dt{font-weight:700;color:var(--burgundy)}.terms dd{margin:0 0 .8rem}
+
+/* misc */
+dialog{border:none;border-radius:var(--r);padding:0;width:min(640px,94vw);box-shadow:0 30px 80px rgba(48,39,41,.35);background:#fff;color:var(--text)}
+dialog::backdrop{background:rgba(48,39,41,.5)}
+.modal-in{padding:1.6rem;position:relative;max-height:85vh;overflow:auto}
+.modal-x{position:absolute;right:.8rem;top:.6rem;background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--muted)}
+.timeline{list-style:none;padding:0;margin:.5rem 0 0;border-left:2px solid var(--pale)}
+.timeline li{padding:0 0 .8rem 1rem;position:relative;font-size:.88rem}.timeline li::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--burgundy)}
+.timeline time{display:block;color:var(--muted);font-size:.75rem}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:.3rem .8rem;font-size:.9rem;margin:.8rem 0}.kv dt{color:var(--muted)}.kv dd{margin:0}
+.toasts{position:fixed;right:1rem;bottom:1rem;display:grid;gap:.5rem;z-index:300}
+.toast{background:var(--burgundy);color:#fff;padding:.75rem 1.1rem;border-radius:var(--r-sm);box-shadow:var(--shadow);font-size:.9rem;max-width:340px;animation:fade .25s}
+.toast.err{background:var(--bad)}
+.site-footer{background:var(--burgundy);color:var(--beige);padding:3rem 0 1rem;margin-top:2rem}
+.site-footer a{display:block;color:var(--beige);text-decoration:none;padding:.15rem 0;font-size:.9rem}.site-footer a:hover{color:#fff;text-decoration:underline}
+.site-footer h4{color:#fff}.foot-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.4fr;gap:2rem}
+.foot-brand .brand-ur{color:#fff}.foot-brand .brand-mark{color:var(--beige)}.foot-brand .brand-en{color:var(--beige)}
+.foot-base{border-top:1px solid rgba(254,215,184,.25);margin-top:2rem;padding-top:1rem;color:var(--rose)}
+.demo-logins{border-top:1px solid var(--pale);padding-top:1rem}
+
+/* responsive */
+@media(max-width:1100px){.main-nav a{padding:.45rem .5rem;font-size:.82rem}.header-actions .btn-ghost{display:none}}
+@media(max-width:980px){
+  .menu-btn{display:flex}
+  .main-nav{display:none;position:absolute;left:0;right:0;top:72px;background:var(--cream);flex-direction:column;padding:1rem;border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+  .main-nav.open{display:flex}.main-nav a{padding:.8rem 1rem;font-size:1rem}
+  .header-actions{margin-left:0}
+  .header-actions .btn-ghost{display:inline-flex}
+  .hero-grid,.ai-intro,.split-layout,.dash-grid,.dash-grid.even{grid-template-columns:1fr}
+  .hero-art{max-width:420px;margin:0 auto;order:-1}
+  .steps{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr}
+  .filters{position:static}.foot-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .header-actions .btn{display:none}.header-actions{margin-left:auto}.menu-btn{margin-left:0}
+  .steps,.grid-2,.grid-3,.form-grid,.quick-form,.foot-grid{grid-template-columns:1fr}
+  .collab{flex-direction:column;align-items:flex-start}
+  .hero{padding-bottom:4rem}.kv{grid-template-columns:1fr}
+  .bar-row{grid-template-columns:90px 1fr 28px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* =====================================================================
+   COLOUR GRADIENT THEME  —  #59171B (burgundy)  ⇄  #FED7B8 (peach)
+   Only colours/gradients are changed below; layout and content stay the same.
+   ===================================================================== */
+:root{
+  --muted:#5e4a4c;                       /* slightly darker so text stays readable on gradients */
+  --g-bur:linear-gradient(180deg,#7a2a2f 0%,#59171B 100%);
+  --g-bur-h:linear-gradient(135deg,#59171B 0%,#7a2a2f 100%);
+  --g-peach:linear-gradient(180deg,#FED7B8 0%,#F3C6A8 100%);
+  --g-swatch:linear-gradient(180deg,#59171B 0%,#8d5550 50%,#FED7B8 100%);   /* the tall bars in your palette */
+  --g-card:linear-gradient(180deg,#ffffff 0%,#FFF6EE 100%);
+}
+
+/* page background: peach top-left, burgundy glow top-right & bottom-left, peach bottom-right */
+body{
+  background:
+    radial-gradient(900px 620px at 100% 0%,rgba(89,23,27,.20),transparent 65%),
+    radial-gradient(900px 620px at 0% 100%,rgba(89,23,27,.18),transparent 65%),
+    linear-gradient(135deg,#FED7B8 0%,#F7DCCB 50%,#FED7B8 100%);
+  background-attachment:fixed;
+}
+
+/* header + banner */
+.site-header{background:linear-gradient(180deg,rgba(254,215,184,.96),rgba(247,224,206,.92));border-bottom-color:rgba(89,23,27,.15)}
+.demo-banner{background:linear-gradient(90deg,#59171B 0%,#7a2a2f 50%,#59171B 100%)}
+.main-nav a:hover{background:rgba(89,23,27,.10)}
+.main-nav a.active{background:var(--g-bur);box-shadow:0 4px 12px rgba(89,23,27,.28)}
+
+/* buttons */
+.btn-primary{background:var(--g-bur-h)}
+.btn-primary:hover{background:linear-gradient(135deg,#6b2227 0%,#8a3338 100%);box-shadow:0 8px 20px rgba(89,23,27,.32)}
+.btn-ghost:hover{background:rgba(89,23,27,.10)}
+.btn-outline:hover{background:var(--g-bur-h)}
+.chip[aria-checked="true"]{background:var(--g-bur);border-color:#59171B}
+.tab.active{border-color:#59171B}
+
+/* hero: peach on the left fading to deep burgundy on the right (like the palette background) */
+.hero{background:linear-gradient(115deg,#FED7B8 0%,#F7D3B9 42%,#C28F82 62%,#7A3034 82%,#59171B 100%)}
+.hero .lead,.hero .trust-row{color:#4a3436}
+.hero-art svg{filter:drop-shadow(0 22px 34px rgba(0,0,0,.35))}
+
+/* cards & surfaces */
+.card,.stat,.rec,.table-wrap{background:var(--g-card);border-color:rgba(89,23,27,.14);box-shadow:0 2px 4px rgba(89,23,27,.08),0 14px 30px rgba(89,23,27,.14)}
+.ai-intro{background:linear-gradient(135deg,#ffffff 0%,#FED7B8 160%)}
+.collab{background:linear-gradient(135deg,#59171B 0%,#7a2a2f 55%,#59171B 100%)}
+.group-badge{background:var(--g-bur);box-shadow:0 6px 14px rgba(89,23,27,.30)}
+.step-n{background:var(--g-peach);box-shadow:0 3px 8px rgba(89,23,27,.15)}
+th{background:linear-gradient(180deg,#FED7B8 0%,#F3CDB4 100%)}
+.note,.note-box{background:linear-gradient(180deg,#FED7B8,#F6CFB5);color:#59171B}
+.why{background:linear-gradient(180deg,#FFF3E8,#FBE3D0)}
+.file-info{background:linear-gradient(180deg,#FED7B8,#F6CFB5)}
+.dropzone{background:linear-gradient(180deg,#FFF3E8 0%,#FED7B8 100%);border-color:#59171B}
+.dropzone.drag{background:linear-gradient(180deg,#FED7B8 0%,#F0BC9D 100%)}
+.bar i{background:linear-gradient(90deg,#C98286,#59171B)}
+.timeline li::before{background:var(--g-bur)}
+.notif-item.unread{background:linear-gradient(180deg,#FFF3E8,#FED7B8)}
+.badge-dot{background:var(--g-bur)}
+.toast{background:var(--g-bur-h)}
+.skip{background:var(--g-bur)}
+dialog{background:var(--g-card)}
+.ur-text{background:linear-gradient(180deg,#FFF3E8,#FED7B8)}
+.empty{background:linear-gradient(180deg,#fff,#FFF3E8);border-color:rgba(89,23,27,.30)}
+.err{color:#9b2226}
+input:focus,select:focus,textarea:focus{border-color:#59171B;box-shadow:0 0 0 3px rgba(254,215,184,.9)}
+
+/* footer */
+.site-footer{background:linear-gradient(180deg,#7a2a2f 0%,#59171B 55%,#471114 100%)}
+.foot-base{border-top-color:rgba(254,215,184,.30)}
+
+/* small screens: vertical gradient like the tall swatches (burgundy top → peach bottom) */
+@media(max-width:980px){
+  .hero{background:linear-gradient(180deg,#59171B 0%,#7A3034 28%,#C28F82 52%,#FED7B8 70%,#FED7B8 100%)}
+  .hero .lead,.hero .trust-row{color:#4a3436}
+}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- SVG sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-drop" viewBox="0 0 64 64"><path d="M32 4C22 18 12 28 12 40a20 20 0 0040 0C52 28 42 18 32 4z" fill="currentColor"/><path d="M29 32h6v6h6v6h-6v6h-6v-6h-6v-6h6z" fill="#FED7B8"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 7H4c0-1 2-2 2-7zM10 20a2 2 0 004 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 018-3 4.6 4.6 0 018 3c0 5.8-8 11-8 11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hosp" viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13zM12 10v6M9 13h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.5 2.7-5.5 6-5.5s6 2 6 5.5M16 5a3.2 3.2 0 010 6M18 14.8c2 .6 3.5 2.3 3.5 5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="site-header" id="siteHeader">
+  <div class="wrap header-in">
+    <a class="brand" href="#/home" aria-label="SEHAT O AFEYAT home">
+      <svg class="brand-mark" aria-hidden="true"><use href="#i-drop"/></svg>
+      <span class="brand-text"><span class="brand-ur" lang="ur" dir="rtl">صحت و عافیت</span><span class="brand-en">SEHAT O AFEYAT</span></span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mainNav" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <nav class="main-nav" id="mainNav" aria-label="Main">
+      <a href="#/home" data-nav="home">Home</a>
+      <a href="#/find" data-nav="find">Find Blood</a>
+      <a href="#/donor" data-nav="donor">Become a Donor</a>
+      <a href="#/report" data-nav="report">AI Report Reader</a>
+      <a href="#/history" data-nav="history">Donation History</a>
+      <a href="#/partners" data-nav="partners">Hospitals &amp; NGOs</a>
+      <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+      <a href="#/request" class="nav-mobile" data-nav="request">Request Blood</a>
+      <a href="#/auth" class="nav-mobile" data-nav="auth">Login / Sign Up</a>
+    </nav>
+    <div class="header-actions">
+      <div class="notif-wrap">
+        <button class="icon-btn" id="notifBtn" aria-label="Notifications" aria-expanded="false" aria-controls="notifPanel"><svg><use href="#i-bell"/></svg><span class="badge-dot" id="notifCount" hidden>0</span></button>
+        <div class="notif-panel" id="notifPanel" hidden></div>
+      </div>
+      <a class="btn btn-ghost" id="authLink" href="#/auth">Login / Sign Up</a>
+      <a class="btn btn-primary" href="#/request">Request Blood</a>
+    </div>
+  </div>
+</header>
+
+<div class="demo-banner" role="note"><strong>Demo build.</strong> All donors, hospitals, NGOs and history records are fictional demo data. Login is demo-mode only — not production authentication. Do not enter real medical information.</div>
+
+<main id="main" tabindex="-1">
+
+<!-- HOME -->
+<section class="view" id="view-home">
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="hero-ur" lang="ur" dir="rtl">صحت و عافیت</p>
+        <p class="eyebrow">SEHAT O AFEYAT &middot; Care That Connects. Hope That Heals.</p>
+        <h1>A Little Help Can <em>Save a Life.</em></h1>
+        <p class="lead">Connect with blood donors, understand your medical reports, and find healthcare support when it matters most.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary btn-lg" href="#/find">Find Blood Donors</a>
+          <a class="btn btn-outline btn-lg" href="#/donor">Become a Donor</a>
+        </div>
+        <ul class="trust-row">
+          <li><svg><use href="#i-check"/></svg> Compatibility-aware matching</li>
+          <li><svg><use href="#i-check"/></svg> No fake distances</li>
+          <li><svg><use href="#i-check"/></svg> Hospital confirmation required</li>
+        </ul>
+      </div>
+     <div class="aizi-art">
+  <img src="aizi.jpg.png" alt="Blood donation illustration" style="width:400px; max-width:100%; height:auto;">
+</div>
+
+  <div class="wrap">
+    <div class="quick-card card" aria-labelledby="qsTitle">
+      <h2 id="qsTitle" class="h3">Quick blood request search</h2>
+      <p class="muted small">Select the patient's blood group, then choose a city.</p>
+      <div class="chips" id="homeGroups" role="radiogroup" aria-label="Blood group"></div>
+      <form class="quick-form" id="quickForm">
+        <label class="field"><span>City</span><select id="quickCity" required></select></label>
+        <label class="field"><span>Component</span><select id="quickComp"></select></label>
+        <button class="btn btn-primary" type="submit">Search donors</button>
+      </form>
+    </div>
+
+    <section class="section">
+      <div class="section-head"><p class="eyebrow">Simple &amp; transparent</p><h2>How it works</h2></div>
+      <ol class="steps">
+        <li class="card"><span class="step-n">1</span><h3>Post a request</h3><p>Share blood group, units, hospital and urgency. Hospital confirmation is always required.</p></li>
+        <li class="card"><span class="step-n">2</span><h3>See transparent matches</h3><p>Donors are ranked by compatibility, city and area, availability, verification and urgency — with reasons shown.</p></li>
+        <li class="card"><span class="step-n">3</span><h3>Donor responds</h3><p>Track every request: Pending, Matched, Request Sent, Accepted, Rejected, Completed, Cancelled.</p></li>
+        <li class="card"><span class="step-n">4</span><h3>Hospital confirms</h3><p>The hospital or blood bank makes the final medical compatibility decision — never the app or AI.</p></li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <div class="section-head split"><div><p class="eyebrow">Demo data</p><h2>Featured nearby donors</h2></div><a class="link" href="#/find">See all donors →</a></div>
+      <div class="grid-3" id="homeDonors"></div>
+      <p class="muted small">These are fictional demo donors. Distances are not shown because no real GPS data is collected.</p>
+    </section>
+
+    <section class="section ai-intro card">
+      <div>
+        <p class="eyebrow">AI Report Reader</p>
+        <h2>Understand your medical report in plain language</h2>
+        <p>Upload a lab report (PDF, JPG or PNG). Text is extracted in your browser, then explained in simple English and Urdu by a real AI model through a secure server. It never diagnoses, prescribes or replaces your doctor.</p>
+        <a class="btn btn-primary" href="#/report">Try the Report Reader</a>
+      </div>
+      <ul class="ai-points">
+        <li><svg><use href="#i-doc"/></svg>Test names, values and dates</li>
+        <li><svg><use href="#i-heart"/></svg>Medical terms explained simply</li>
+        <li><svg><use href="#i-check"/></svg>Flags only what the report itself marks</li>
+        <li><svg><use href="#i-users"/></svg>Questions to ask your doctor</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><p class="eyebrow">Impact</p><h2>Donation impact</h2></div>
+      <div class="stats" id="homeStats"></div>
+      <p class="muted small">Figures reflect the demo data currently in this browser — not real-world results.</p>
+    </section>
+
+    <section class="section collab card">
+      <div><p class="eyebrow">For institutions</p><h2>Hospitals &amp; NGO collaboration</h2>
+      <p>Hospitals manage and verify requests; NGOs run donation campaigns and community support. Listings in this demo are placeholders — no real partnerships are claimed.</p></div>
+      <div class="collab-cta"><a class="btn btn-outline" href="#/partners">View listings</a><a class="btn btn-primary" href="#/auth" data-signup="hospital">Register an institution</a></div>
+    </section>
+  </div>
+</section>
+
+<!-- FIND BLOOD -->
+<section class="view" id="view-find" hidden>
+  <div class="wrap">
+    <header class="page-head"><p class="eyebrow">Primary feature</p><h1>Find Blood Donors</h1><p class="muted">Matching uses blood-group and component compatibility, city and area, availability, verification and urgency. Final compatibility must be confirmed by a hospital or blood bank.</p></header>
+    <div class="split-layout">
+      <form class="card filters" id="findForm" novalidate>
+        <h2 class="h3">Filters</h2>
+        <label class="field"><span>Link to my request</span><select id="fLinked"><option value="">— None (browse only) —</option></select></label>
+        <label class="field"><span>Patient's blood group</span><select id="fGroup"><option value="">Any (no compatibility filter)</option></select></label>
+        <label class="field"><span>Blood component</span><select id="fComp"></select></label>
+        <label class="field"><span>City</span><select id="fCity"><option value="">All cities</option></select></label>
+        <label class="field"><span>Area</span><select id="fArea"><option value="">All areas</option></select></label>
+        <label class="field"><span>Urgency</span><select id="fUrg"></select></label>
+        <label class="field"><span>Availability</span><select id="fAvail"><option value="">Any</option><option value="yes">Available now</option><option value="no">Unavailable</option></select></label>
+        <label class="field"><span>Verification</span><select id="fVer"><option value="">Any</option><option value="yes">Verified only</option><option value="no">Unverified</option></select></label>
+        <div class="row-gap"><button class="btn btn-primary" type="submit">Apply filters</button><button class="btn btn-ghost" type="reset" id="fReset">Reset</button></div>
+        <p class="note small">Distance: not shown. This demo does not collect real GPS coordinates, so matching uses city and area only.</p>
+      </form>
+      <div>
+        <div class="result-bar"><strong id="findCount">0 donors</strong><span class="muted small" id="findHint"></span></div>
+        <div class="grid-2" id="findResults" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REQUEST BLOOD -->
+<section class="view" id="view-request" hidden>
+  <div class="wrap narrow">
+    <header class="page-head"><p class="eyebrow">Blood request</p><h1>Request Blood</h1><p class="muted">Submitting creates a request with status “Pending” or “Matched” and shows transparent donor matches. Hospital confirmation is required before any transfusion.</p></header>
+    <form class="card form-grid" id="requestForm" novalidate>
+      <label class="field"><span>Patient / receiver name *</span><input id="rName" autocomplete="off" required><small class="err" data-for="rName"></small></label>
+      <label class="field"><span>Required blood group *</span><select id="rGroup" required><option value="">Select…</option></select><small class="err" data-for="rGroup"></small></label>
+      <label class="field"><span>Blood component *</span><select id="rComp"></select></label>
+      <label class="field"><span>Units required *</span><input id="rUnits" type="number" min="1" max="10" value="1" required><small class="err" data-for="rUnits"></small></label>
+      <label class="field"><span>City *</span><select id="rCity" required></select></label>
+      <label class="field"><span>Area / neighbourhood *</span><select id="rArea" required></select></label>
+      <label class="field"><span>Hospital name *</span><input id="rHosp" required><small class="err" data-for="rHosp"></small></label>
+      <label class="field"><span>Hospital location / address *</span><input id="rHospLoc" required><small class="err" data-for="rHospLoc"></small></label>
+      <label class="field"><span>Urgency *</span><select id="rUrg"></select></label>
+      <label class="field"><span>Required date *</span><input id="rDate" type="date" required><small class="err" data-for="rDate"></small></label>
+      <label class="field"><span>Contact number *</span><input id="rPhone" type="tel" placeholder="03XX-XXXXXXX" required><small class="err" data-for="rPhone"></small></label>
+      <label class="field"><span>Hospital verification</span><input value="Pending — the hospital must confirm this request" disabled></label>
+      <label class="field full"><span>Additional notes</span><textarea id="rNotes" rows="3" maxlength="400"></textarea></label>
+      <div class="full row-gap"><button class="btn btn-primary btn-lg" type="submit">Submit request &amp; see matches</button><a class="btn btn-ghost" href="#/find">Browse donors instead</a></div>
+    </form>
+  </div>
+</section>
+
+<!-- BECOME A DONOR -->
+<section class="view" id="view-donor" hidden>
+  <div class="wrap narrow">
+    <header class="page-head"><p class="eyebrow">Be the reason someone gets better</p><h1>Become a Donor</h1><p class="muted">Register your donor profile. Your public display name shows only your first name and last initial. Verification by an administrator is required for the “Verified” badge.</p></header>
+    <form class="card form-grid" id="donorForm" novalidate>
+      <label class="field"><span>Full name *</span><input id="dName" required><small class="err" data-for="dName"></small></label>
+      <label class="field"><span>Blood group *</span><select id="dGroup" required><option value="">Select…</option></select><small class="err" data-for="dGroup"></small></label>
+      <label class="field"><span>City *</span><select id="dCity" required></select></label>
+      <label class="field"><span>Area *</span><select id="dArea" required></select></label>
+      <label class="field"><span>Phone *</span><input id="dPhone" type="tel" placeholder="03XX-XXXXXXX" required><small class="err" data-for="dPhone"></small></label>
+      <label class="field"><span>Last donation date (optional)</span><input id="dLast" type="date"></label>
+      <label class="check full"><input type="checkbox" id="dAvail" checked> <span>I am currently available to donate</span></label>
+      <label class="check full"><input type="checkbox" id="dAge" required> <span>I confirm I am 18 or older and will follow the screening rules of the hospital or blood bank. *</span></label>
+      <small class="err full" data-for="dAge"></small>
+      <div class="full"><button class="btn btn-primary btn-lg" type="submit">Register as donor</button></div>
+    </form>
+  </div>
+</section>
+
+<!-- AI REPORT READER -->
+<section class="view" id="view-report" hidden>
+  <div class="wrap narrow-lg">
+    <header class="page-head"><p class="eyebrow">Real AI · secure backend</p><h1>AI Report Reader</h1><p class="muted">Upload a PDF, JPG or PNG lab report. Text is extracted in your browser, then sent to a server-side AI function for a plain-language explanation. This tool does not diagnose, prescribe or replace a doctor.</p></header>
+    <div class="card">
+      <div class="dropzone" id="dropzone">
+        <svg class="dz-ic"><use href="#i-doc"/></svg>
+        <p><strong>Choose a report</strong> or drag it here</p>
+        <p class="muted small">PDF, JPG or PNG · up to 8 MB · use a non-sensitive sample for testing</p>
+        <input type="file" id="repFile" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+      </div>
+      <p class="err" id="repErr" role="alert"></p>
+      <div id="repFileInfo" class="file-info" hidden></div>
+      <label class="check"><input type="checkbox" id="repConsent"> <span>I consent to my report text being sent to an AI service to generate an explanation. Files are not stored; text is kept only in this browser tab until I remove it.</span></label>
+      <label class="field inline"><span>Explanation language</span><select id="repLang"><option value="both">English + Urdu</option><option value="en">English only</option></select></label>
+      <div class="row-gap">
+        <button class="btn btn-primary" id="repExtract" disabled>1. Extract text</button>
+        <button class="btn btn-primary" id="repAnalyze" disabled>2. Explain with AI</button>
+        <button class="btn btn-ghost" id="repClear">Remove file &amp; data</button>
+      </div>
+      <div id="repTextWrap" hidden>
+        <label class="field"><span>Extracted text — review and correct before sending</span><textarea id="repText" rows="9"></textarea></label>
+      </div>
+      <div class="status-line" id="repStatus" role="status"></div>
+    </div>
+    <div id="repResult" class="report-result" hidden></div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="view" id="view-history" hidden>
+  <div class="wrap">
+    <header class="page-head"><p class="eyebrow">Your records · demo data</p><h1>Donation &amp; Receiving History</h1></header>
+    <div id="historyGate"></div>
+    <div id="historyBody" hidden>
+      <div class="tabs" role="tablist">
+        <button class="tab active" role="tab" data-htab="receive" aria-selected="true">Receiving history</button>
+        <button class="tab" role="tab" data-htab="donate" aria-selected="false">Donor history</button>
+      </div>
+      <form class="card filter-row" id="histFilter">
+        <label class="field"><span>Status</span><select id="hStatus"><option value="">All</option></select></label>
+        <label class="field"><span>From</span><input type="date" id="hFrom"></label>
+        <label class="field"><span>To</span><input type="date" id="hTo"></label>
+        <button class="btn btn-ghost" type="reset">Clear</button>
+      </form>
+      <div class="stats small-stats" id="histStats"></div>
+      <div id="histList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<section class="view" id="view-partners" hidden>
+  <div class="wrap">
+    <header class="page-head"><p class="eyebrow">Placeholders only</p><h1>Hospitals &amp; NGOs</h1><p class="muted">These listings are fictional placeholders for the demo. No real partnership, endorsement or service is implied.</p></header>
+    <div class="grid-3" id="orgList"></div>
+    <div class="card collab"><div><h2 class="h3">Are you a hospital or NGO?</h2><p>Register to manage blood requests or run donation campaigns. In production, institutions would be verified by an administrator before going live.</p></div><a class="btn btn-primary" href="#/auth" data-signup="hospital">Register an institution</a></div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="view" id="view-dashboard" hidden>
+  <div class="wrap" id="dashBody"></div>
+</section>
+
+<!-- AUTH -->
+<section class="view" id="view-auth" hidden>
+  <div class="wrap narrow">
+    <header class="page-head"><p class="eyebrow">Demo mode</p><h1>Login / Sign Up</h1></header>
+    <div class="note-box"><strong>Demo authentication.</strong> Accounts live only in this browser (localStorage). This is not secure production authentication — a real deployment would use a managed auth service (e.g. Supabase Auth, Firebase Auth, or Auth0) with server-side sessions. Do not use a real password.</div>
+    <div class="tabs" role="tablist"><button class="tab active" data-atab="login" role="tab">Login</button><button class="tab" data-atab="signup" role="tab">Sign up</button></div>
+    <form class="card form-grid" id="loginForm" novalidate>
+      <label class="field full"><span>Email *</span><input id="lEmail" type="email" autocomplete="username"><small class="err" data-for="lEmail"></small></label>
+      <label class="field full"><span>Password *</span><input id="lPass" type="password" autocomplete="current-password"><small class="err" data-for="lPass"></small></label>
+      <div class="full"><button class="btn btn-primary btn-lg" type="submit">Login</button></div>
+      <div class="full demo-logins"><p class="muted small">Or explore instantly with a demo account:</p>
+        <div class="chips">
+          <button type="button" class="chip" data-action="demo-login" data-role="patient">Patient</button>
+          <button type="button" class="chip" data-action="demo-login" data-role="donor">Donor</button>
+          <button type="button" class="chip" data-action="demo-login" data-role="hospital">Hospital</button>
+          <button type="button" class="chip" data-action="demo-login" data-role="ngo">NGO</button>
+          <button type="button" class="chip" data-action="demo-login" data-role="admin">Administrator</button>
+        </div></div>
+    </form>
+    <form class="card form-grid" id="signupForm" novalidate hidden>
+      <label class="field"><span>Full / organisation name *</span><input id="sName"><small class="err" data-for="sName"></small></label>
+      <label class="field"><span>Role *</span><select id="sRole">
+        <option value="patient">Patient / Receiver</option><option value="donor">Blood Donor</option><option value="hospital">Hospital</option><option value="ngo">NGO</option><option value="admin">Administrator (demo)</option></select></label>
+      <label class="field"><span>Email *</span><input id="sEmail" type="email" autocomplete="username"><small class="err" data-for="sEmail"></small></label>
+      <label class="field"><span>Phone *</span><input id="sPhone" type="tel" placeholder="03XX-XXXXXXX"><small class="err" data-for="sPhone"></small></label>
+      <label class="field"><span>City *</span><select id="sCity"></select></label>
+      <label class="field"><span>Area *</span><select id="sArea"></select></label>
+      <label class="field" id="sGroupWrap" hidden><span>Blood group *</span><select id="sGroup"><option value="">Select…</option></select><small class="err" data-for="sGroup"></small></label>
+      <label class="field"><span>Password * (min 8 chars)</span><input id="sPass" type="password" autocomplete="new-password"><small class="err" data-for="sPass"></small></label>
+      <div class="full"><button class="btn btn-primary btn-lg" type="submit">Create account</button></div>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap foot-grid">
+    <div><div class="brand foot-brand"><svg class="brand-mark" aria-hidden="true"><use href="#i-drop"/></svg><span class="brand-text"><span class="brand-ur" lang="ur" dir="rtl">صحت و عافیت</span><span class="brand-en">SEHAT O AFEYAT</span></span></div>
+      <p class="small">Care That Connects. Hope That Heals.</p></div>
+    <div><h4>Explore</h4><a href="#/find">Find Blood</a><a href="#/donor">Become a Donor</a><a href="#/report">AI Report Reader</a><a href="#/partners">Hospitals &amp; NGOs</a></div>
+    <div><h4>Contact (placeholders)</h4><p class="small">Hyderabad, Sindh, Pakistan<br>hello@example.org<br>+92 300 0000000</p></div>
+    <div><h4>Privacy</h4><p class="small">Demo data lives in your browser only. Medical reports are not stored; extracted text is sent to an AI service only after your consent. This app gives information, not medical advice. In an emergency, contact a hospital directly.</p></div>
+  </div>
+  <div class="wrap foot-base small">© 2026 SEHAT O AFEYAT — hackathon demo. Not a medical device.</div>
+</footer>
+
+<dialog id="modal" aria-labelledby="modalTitle"><div class="modal-in"><button class="modal-x" data-action="close-modal" aria-label="Close">×</button><div id="modalBody"></div></div></dialog>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+/* SEHAT O AFEYAT — صحت و عافیت
+ * Vanilla JS app: routing, demo auth, blood requests, transparent matching,
+ * history, dashboards, notifications and the AI report reader UI.
+ * DEMO NOTE: data lives in localStorage and is fictional. Not production storage/auth. */
+(() => {
+'use strict';
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const slug = s => String(s).toLowerCase().replace(/[^a-z]+/g, '-');
+const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+const fmtTime = d => new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const today = () => new Date().toISOString().slice(0, 10);
+const nowISO = () => new Date().toISOString();
+const uid = p => p + '-' + Math.random().toString(36).slice(2, 8);
+
+/* ---------- constants ---------- */
+const GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const COMPONENTS = ['Whole Blood', 'Red Cells', 'Plasma', 'Platelets'];
+const STATUSES = ['Pending', 'Matched', 'Request Sent', 'Accepted', 'Rejected', 'Completed', 'Cancelled'];
+const URGENCY = ['Critical', 'Urgent', 'Planned'];
+const URG_LABEL = { Critical: 'Critical (within hours)', Urgent: 'Urgent (within 24 hours)', Planned: 'Planned (within a week)' };
+const ROLES = { patient: 'Patient / Receiver', donor: 'Blood Donor', hospital: 'Hospital', ngo: 'NGO', admin: 'Administrator' };
+const AREAS = {
+  Hyderabad: ['Latifabad', 'Qasimabad', 'Hirabad', 'Saddar', 'Hussainabad', 'Autobhan Road', 'Cantonment', 'Tilak Charhi'],
+  Jamshoro: ['University Campus', 'Kotri Road'],
+  Kotri: ['Old Kotri', 'SITE Area'],
+  Karachi: ['Gulshan-e-Iqbal', 'Korangi', 'North Nazimabad']
+};
+const CITIES = Object.keys(AREAS);
+
+/* ---------- compatibility (information only; hospital makes final decision) ---------- */
+const RBC = { 'O-': GROUPS, 'O+': ['O+', 'A+', 'B+', 'AB+'], 'A-': ['A-', 'A+', 'AB-', 'AB+'], 'A+': ['A+', 'AB+'], 'B-': ['B-', 'B+', 'AB-', 'AB+'], 'B+': ['B+', 'AB+'], 'AB-': ['AB-', 'AB+'], 'AB+': ['AB+'] };
+const PLASMA = { AB: ['A', 'B', 'AB', 'O'], A: ['A', 'O'], B: ['B', 'O'], O: ['O'] }; // donor ABO -> recipient ABO
+const abo = g => g.replace(/[+-]/, '');
+function compat(dg, rg, comp) {
+  if (!rg) return { ok: true, exact: false, note: 'No patient group entered — compatibility not filtered' };
+  const exact = dg === rg;
+  switch (comp) {
+    case 'Red Cells': { const ok = RBC[dg].includes(rg); return { ok, exact, note: exact ? 'Identical blood group (' + dg + ')' : 'Red-cell compatible: ' + dg + ' → ' + rg }; }
+    case 'Plasma': { const ok = PLASMA[abo(dg)].includes(abo(rg)); return { ok, exact, note: exact ? 'Identical blood group (' + dg + ')' : 'Plasma ABO-compatible: ' + abo(dg) + ' → ' + abo(rg) + ' (Rh not considered)' }; }
+    case 'Platelets': { const ok = abo(dg) === abo(rg); return { ok, exact, note: exact ? 'Identical blood group (' + dg + ')' : 'ABO-identical platelets (Rh differs — blood bank to confirm)' }; }
+    default: { const ok = abo(dg) === abo(rg) && (exact || (dg.endsWith('-') && rg.endsWith('+'))); return { ok, exact, note: exact ? 'Identical blood group (' + dg + ')' : 'Same ABO, Rh-negative donor for Rh-positive patient' }; }
+  }
+}
+function matchDonors(q, donors) {
+  const out = [];
+  for (const d of donors) {
+    const c = compat(d.group, q.group, q.component);
+    if (!c.ok) continue;
+    if (q.city && d.city !== q.city) continue;
+    if (q.area && d.area !== q.area) continue;
+    if (q.avail === 'yes' && !d.available) continue;
+    if (q.avail === 'no' && d.available) continue;
+    if (q.ver === 'yes' && !d.verified) continue;
+    if (q.ver === 'no' && d.verified) continue;
+    let score = c.exact ? 30 : 20;
+    const why = [c.note];
+    if (q.city) { score += 25; why.push('Same city: ' + d.city); }
+    if (q.area) { score += 15; why.push('Same area: ' + d.area); } else if (q.city) why.push('Area: ' + d.area + ' (no area selected)');
+    if (d.available) { score += 20; why.push('Marked available'); if (q.urgency === 'Critical') { score += 5; why.push('Available for a critical request'); } } else why.push('Currently unavailable — shown lower');
+    if (d.verified) { score += 10; why.push('Profile verified by administrator'); } else why.push('Not yet verified');
+    out.push({ donor: d, score, why });
+  }
+  return out.sort((a, b) => b.score - a.score);
+}
+
+/* ---------- state (demo persistence) ---------- */
+const KEY = 'sehat_o_afeyat_demo_v1';
+function seed() {
+  const d = (id, name, group, city, area, available, verified, userId) => ({ id, name, group, city, area, available, verified, userId: userId || null, phone: '03XX-XXXXXXX', last: '2026-06-14' });
+  return {
+    users: [
+      { id: 'u-patient', name: 'Sana Malik', role: 'patient', email: 'patient@demo.test', phone: '0300-0000001', city: 'Hyderabad', area: 'Latifabad', verified: true, demo: true },
+      { id: 'u-donor', name: 'Ahmed Khan', role: 'donor', email: 'donor@demo.test', phone: '0300-0000002', city: 'Hyderabad', area: 'Qasimabad', verified: true, demo: true },
+      { id: 'u-hospital', name: 'Demo City Hospital', role: 'hospital', email: 'hospital@demo.test', phone: '022-0000000', city: 'Hyderabad', area: 'Saddar', verified: true, demo: true },
+      { id: 'u-ngo', name: 'Demo Care Trust (NGO)', role: 'ngo', email: 'ngo@demo.test', phone: '022-0000001', city: 'Hyderabad', area: 'Hirabad', verified: true, demo: true },
+      { id: 'u-admin', name: 'Demo Administrator', role: 'admin', email: 'admin@demo.test', phone: '0300-0000009', city: 'Hyderabad', area: 'Saddar', verified: true, demo: true }
+    ],
+    session: null,
+    donors: [
+      d('d1', 'Ahmed K.', 'O+', 'Hyderabad', 'Qasimabad', true, true, 'u-donor'),
+      d('d2', 'Fatima R.', 'A+', 'Hyderabad', 'Latifabad', true, true),
+      d('d3', 'Bilal S.', 'B+', 'Hyderabad', 'Hirabad', true, false),
+      d('d4', 'Hina M.', 'O-', 'Hyderabad', 'Saddar', true, true),
+      d('d5', 'Usman J.', 'AB+', 'Hyderabad', 'Latifabad', false, true),
+      d('d6', 'Zainab A.', 'A-', 'Hyderabad', 'Autobhan Road', true, false),
+      d('d7', 'Imran Q.', 'B-', 'Hyderabad', 'Hussainabad', true, true),
+      d('d8', 'Ayesha N.', 'O+', 'Hyderabad', 'Latifabad', true, true),
+      d('d9', 'Kamran T.', 'A+', 'Jamshoro', 'University Campus', true, true),
+      d('d10', 'Maria D.', 'O+', 'Kotri', 'Old Kotri', false, false),
+      d('d11', 'Hamza P.', 'AB-', 'Karachi', 'Gulshan-e-Iqbal', true, true),
+      d('d12', 'Sadia L.', 'B+', 'Hyderabad', 'Qasimabad', true, true)
+    ],
+    requests: [
+      { id: 'BR-1001', owner: 'u-patient', patient: 'Sana Malik', group: 'A+', component: 'Red Cells', units: 2, city: 'Hyderabad', area: 'Latifabad', hospital: 'Demo City Hospital', hospLoc: 'Saddar, Hyderabad', urgency: 'Urgent', date: '2026-10-25', phone: '0300-0000001', notes: 'Scheduled surgery.', hospVerified: true, status: 'Accepted', created: '2026-10-20T09:15:00Z', matches: [{ donorId: 'd2', status: 'Accepted' }, { donorId: 'd8', status: 'Matched' }], timeline: [{ t: '2026-10-20T09:15:00Z', s: 'Request created (Pending)' }, { t: '2026-10-20T09:15:00Z', s: 'Matched with 2 donors' }, { t: '2026-10-21T11:00:00Z', s: 'Request sent to Fatima R.' }, { t: '2026-10-21T14:30:00Z', s: 'Accepted by Fatima R.' }] },
+      { id: 'BR-1002', owner: 'u-patient', patient: 'Sana Malik', group: 'A+', component: 'Whole Blood', units: 1, city: 'Hyderabad', area: 'Latifabad', hospital: 'Demo City Hospital', hospLoc: 'Saddar, Hyderabad', urgency: 'Planned', date: '2026-08-12', phone: '0300-0000001', notes: '', hospVerified: true, status: 'Completed', created: '2026-08-05T10:00:00Z', matches: [{ donorId: 'd2', status: 'Completed' }], timeline: [{ t: '2026-08-05T10:00:00Z', s: 'Request created (Pending)' }, { t: '2026-08-06T10:00:00Z', s: 'Accepted by Fatima R.' }, { t: '2026-08-12T12:00:00Z', s: 'Marked Completed by hospital' }] },
+      { id: 'BR-1003', owner: 'u-patient', patient: 'Sana Malik', group: 'A+', component: 'Platelets', units: 1, city: 'Hyderabad', area: 'Latifabad', hospital: 'Demo City Hospital', hospLoc: 'Saddar, Hyderabad', urgency: 'Urgent', date: '2026-05-03', phone: '0300-0000001', notes: '', hospVerified: true, status: 'Cancelled', created: '2026-05-01T08:30:00Z', matches: [], timeline: [{ t: '2026-05-01T08:30:00Z', s: 'Request created (Pending)' }, { t: '2026-05-02T08:30:00Z', s: 'Cancelled by requester' }] },
+      { id: 'BR-1004', owner: 'demo-x', patient: 'Rashid Ali', group: 'O-', component: 'Red Cells', units: 3, city: 'Hyderabad', area: 'Saddar', hospital: 'Demo City Hospital', hospLoc: 'Saddar, Hyderabad', urgency: 'Critical', date: '2026-10-23', phone: '0300-0000010', notes: 'Trauma case.', hospVerified: true, status: 'Request Sent', created: '2026-10-23T06:20:00Z', matches: [{ donorId: 'd4', status: 'Request Sent' }], timeline: [{ t: '2026-10-23T06:20:00Z', s: 'Request created (Pending)' }, { t: '2026-10-23T06:25:00Z', s: 'Request sent to Hina M.' }] },
+      { id: 'BR-1005', owner: 'demo-y', patient: 'Noor Fatima', group: 'B+', component: 'Whole Blood', units: 1, city: 'Hyderabad', area: 'Hirabad', hospital: 'Demo City Hospital', hospLoc: 'Saddar, Hyderabad', urgency: 'Urgent', date: '2026-10-24', phone: '0300-0000011', notes: '', hospVerified: false, status: 'Matched', created: '2026-10-22T16:00:00Z', matches: [{ donorId: 'd3', status: 'Matched' }, { donorId: 'd12', status: 'Matched' }], timeline: [{ t: '2026-10-22T16:00:00Z', s: 'Request created (Pending)' }, { t: '2026-10-22T16:00:00Z', s: 'Matched with 2 donors' }] },
+      { id: 'BR-1006', owner: 'demo-z', patient: 'Tariq Hussain', group: 'AB-', component: 'Plasma', units: 2, city: 'Karachi', area: 'Korangi', hospital: 'Demo Metro Hospital', hospLoc: 'Korangi, Karachi', urgency: 'Planned', date: '2026-10-30', phone: '0300-0000012', notes: '', hospVerified: false, status: 'Pending', created: '2026-10-22T18:30:00Z', matches: [], timeline: [{ t: '2026-10-22T18:30:00Z', s: 'Request created (Pending)' }] },
+      { id: 'BR-1007', owner: 'demo-w', patient: 'Imtiaz Baig', group: 'O+', component: 'Red Cells', units: 1, city: 'Hyderabad', area: 'Qasimabad', hospital: 'Demo City Hospital', hospLoc: 'Saddar, Hyderabad', urgency: 'Urgent', date: '2026-09-18', phone: '0300-0000013', notes: '', hospVerified: true, status: 'Completed', created: '2026-09-15T10:00:00Z', matches: [{ donorId: 'd1', status: 'Completed' }], timeline: [{ t: '2026-09-15T10:00:00Z', s: 'Request created (Pending)' }, { t: '2026-09-18T13:00:00Z', s: 'Marked Completed by hospital' }] }
+    ],
+    donations: [
+      { id: 'dn1', donorId: 'd1', date: '2026-09-18', place: 'Demo City Hospital', component: 'Red Cells', status: 'Completed', requestId: 'BR-1007' },
+      { id: 'dn2', donorId: 'd1', date: '2026-06-14', place: 'Demo Blood Bank, Hyderabad', component: 'Whole Blood', status: 'Completed', requestId: null },
+      { id: 'dn3', donorId: 'd1', date: '2026-02-02', place: 'Demo Blood Camp (NGO)', component: 'Whole Blood', status: 'Completed', requestId: null },
+      { id: 'dn4', donorId: 'd1', date: '2025-10-11', place: 'Demo City Hospital', component: 'Platelets', status: 'Completed', requestId: null }
+    ],
+    notifs: [
+      { id: 'n1', userId: 'u-patient', text: 'Fatima R. accepted your blood request BR-1001.', time: '2026-10-21T14:30:00Z', read: false },
+      { id: 'n2', userId: 'u-donor', text: 'Welcome! You have no new requests right now.', time: '2026-10-20T08:00:00Z', read: false },
+      { id: 'n3', userId: 'u-hospital', text: 'New critical request BR-1004 needs confirmation.', time: '2026-10-23T06:20:00Z', read: false },
+      { id: 'n4', userId: 'u-admin', text: '3 verification requests are waiting for review.', time: '2026-10-22T10:00:00Z', read: false }
+    ],
+    campaigns: [
+      { id: 'c1', title: 'Ramadan Blood Drive (demo)', city: 'Hyderabad', date: '2026-11-15', goal: 100, donors: 0, status: 'Active', hospital: 'Demo City Hospital' },
+      { id: 'c2', title: 'University Donation Camp (demo)', city: 'Jamshoro', date: '2026-07-10', goal: 60, donors: 48, status: 'Completed', hospital: 'Demo Blood Bank' }
+    ],
+    assist: [
+      { id: 'a1', name: 'Family of Rashid Ali', need: 'Help arranging donors for trauma surgery', city: 'Hyderabad', status: 'Open' },
+      { id: 'a2', name: 'Noor Fatima', need: 'Transport support for thalassemia transfusions', city: 'Hyderabad', status: 'In Progress' },
+      { id: 'a3', name: 'Tariq Hussain', need: 'Information on plasma donation', city: 'Karachi', status: 'Resolved' }
+    ],
+    verifications: [
+      { id: 'v1', type: 'Donor', name: 'Bilal S.', city: 'Hyderabad', status: 'Pending', donorId: 'd3' },
+      { id: 'v2', type: 'Donor', name: 'Zainab A.', city: 'Hyderabad', status: 'Pending', donorId: 'd6' },
+      { id: 'v3', type: 'Hospital', name: 'Demo Metro Hospital', city: 'Karachi', status: 'Pending', orgId: 'o3' }
+    ],
+    orgs: [
+      { id: 'o1', name: 'Demo City Hospital', type: 'Hospital', city: 'Hyderabad', verified: true, about: 'Placeholder listing — blood bank and emergency services.' },
+      { id: 'o2', name: 'Demo Care Trust', type: 'NGO', city: 'Hyderabad', verified: true, about: 'Placeholder listing — donation camps and community support.' },
+      { id: 'o3', name: 'Demo Metro Hospital', type: 'Hospital', city: 'Karachi', verified: false, about: 'Placeholder listing — awaiting verification.' },
+      { id: 'o4', name: 'Demo Thalassemia Support Society', type: 'NGO', city: 'Hyderabad', verified: false, about: 'Placeholder listing — awaiting verification.' }
+    ],
+    flagged: [
+      { id: 'f1', target: 'Donor profile “Kamran T.”', reason: 'Reported for unreachable phone number', status: 'Open' },
+      { id: 'f2', target: 'Request BR-1006', reason: 'Reported as possible duplicate', status: 'Open' }
+    ],
+    activity: [
+      { t: '2026-10-23T06:20:00Z', s: 'Critical request BR-1004 created' },
+      { t: '2026-10-22T18:30:00Z', s: 'Request BR-1006 created' },
+      { t: '2026-10-21T14:30:00Z', s: 'Fatima R. accepted request BR-1001' }
+    ]
+  };
+}
+let S;
+function load() { try { const raw = localStorage.getItem(KEY); S = raw ? JSON.parse(raw) : seed(); } catch { S = seed(); } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* storage unavailable */ } }
+load();
+
+const me = () => S.users.find(u => u.id === S.session) || null;
+const donorOf = userId => S.donors.find(d => d.userId === userId);
+const donorById = id => S.donors.find(d => d.id === id);
+const reqById = id => S.requests.find(r => r.id === id);
+function log(s) { S.activity.unshift({ t: nowISO(), s }); S.activity = S.activity.slice(0, 40); }
+function notify(userId, text) { if (userId) S.notifs.unshift({ id: uid('n'), userId, text, time: nowISO(), read: false }); }
+function stamp(req, s) { req.timeline.push({ t: nowISO(), s }); }
+
+/* ---------- UI primitives ---------- */
+function toast(msg, isErr) {
+  const el = document.createElement('div'); el.className = 'toast' + (isErr ? ' err' : ''); el.textContent = msg;
+  $('#toasts').appendChild(el); setTimeout(() => el.remove(), 4200);
+}
+function openModal(html) { $('#modalBody').innerHTML = html; const m = $('#modal'); if (!m.open) m.showModal(); }
+function closeModal() { const m = $('#modal'); if (m.open) m.close(); }
+const statusBadge = s => {
+  const cls = { Pending: 'b-warn', Matched: 'b-info', 'Request Sent': 'b-info', Accepted: 'b-ok', Rejected: 'b-bad', Completed: 'b-ok', Cancelled: 'b-mute' }[s] || 'b-mute';
+  return `<span class="badge ${cls}">${esc(s)}</span>`;
+};
+const verBadge = v => v ? '<span class="badge b-ok">✓ Verified</span>' : '<span class="badge b-warn">Unverified</span>';
+const urgBadge = u => `<span class="badge ${u === 'Critical' ? 'b-bad' : u === 'Urgent' ? 'b-warn' : 'b-mute'}">${esc(u)}</span>`;
+const opts = (arr, sel, withEmpty) => (withEmpty ? `<option value="">${withEmpty}</option>` : '') + arr.map(v => `<option${v === sel ? ' selected' : ''}>${esc(v)}</option>`).join('');
+const empty = (t, m, cta) => `<div class="empty"><h3>${esc(t)}</h3><p>${esc(m)}</p>${cta || ''}</div>`;
+function validate(rules) {
+  let ok = true;
+  $$('.err').forEach(e => { if (rules.scope && rules.scope.contains(e)) e.textContent = ''; });
+  for (const [id, test, msg] of rules.items) {
+    const el = $('#' + id); const err = $(`.err[data-for="${id}"]`);
+    const bad = !test(el);
+    if (err) err.textContent = bad ? msg : '';
+    if (el && el.closest('.field')) el.closest('.field').classList.toggle('invalid', bad);
+    if (bad) { if (ok && el) el.focus(); ok = false; }
+  }
+  return ok;
+}
+const phoneOk = el => /^(\+?92|0)?3\d{2}[-\s]?\d{7}$/.test(el.value.trim()) || /^0\d{2}[-\s]?\d{6,8}$/.test(el.value.trim());
+const filled = el => el.value.trim().length > 0;
+
+/* ---------- init selects ---------- */
+function bindCityArea(cityId, areaId, withEmpty) {
+  const c = $('#' + cityId), a = $('#' + areaId);
+  const fill = () => { a.innerHTML = opts(AREAS[c.value] || [], '', withEmpty ? 'All areas' : ''); };
+  c.addEventListener('change', fill); fill();
+}
+function initSelects() {
+  const g = (id, empty) => { $(id).innerHTML = `<option value="">${empty}</option>` + GROUPS.map(x => `<option>${x}</option>`).join(''); };
+  g('#rGroup', 'Select…'); g('#dGroup', 'Select…'); g('#sGroup', 'Select…'); g('#fGroup', 'Any (no compatibility filter)');
+  ['#rComp', '#fComp', '#quickComp'].forEach(id => { $(id).innerHTML = opts(COMPONENTS); });
+  ['#rUrg', '#fUrg'].forEach(id => { $(id).innerHTML = URGENCY.map(u => `<option value="${u}">${URG_LABEL[u]}</option>`).join(''); });
+  ['#rCity', '#dCity', '#sCity'].forEach(id => { $(id).innerHTML = opts(CITIES, 'Hyderabad'); });
+  $('#quickCity').innerHTML = opts(CITIES, 'Hyderabad');
+  $('#fCity').innerHTML = '<option value="">All cities</option>' + opts(CITIES);
+  bindCityArea('rCity', 'rArea'); bindCityArea('dCity', 'dArea'); bindCityArea('sCity', 'sArea');
+  const fc = $('#fCity'), fa = $('#fArea');
+  fc.addEventListener('change', () => { fa.innerHTML = '<option value="">All areas</option>' + opts(AREAS[fc.value] || []); });
+  $('#hStatus').innerHTML = '<option value="">All</option>' + opts(STATUSES);
+  $('#rDate').min = today(); $('#rDate').value = today();
+  $('#homeGroups').innerHTML = GROUPS.map(x => `<button type="button" class="chip" role="radio" aria-checked="false" data-action="quick-group" data-g="${x}">${x}</button>`).join('');
+}
+
+/* ---------- router ---------- */
+const VIEWS = ['home', 'find', 'request', 'donor', 'report', 'history', 'partners', 'dashboard', 'auth'];
+const PROTECTED = ['history', 'dashboard'];
+let pendingRoute = null;
+function route() {
+  let name = (location.hash.replace(/^#\/?/, '') || 'home').split('?')[0];
+  if (!VIEWS.includes(name)) name = 'home';
+  if (PROTECTED.includes(name) && !me()) { pendingRoute = name; if (name === 'history') { /* gate shown in view */ } else { toast('Please log in to open your dashboard.'); name = 'auth'; } }
+  VIEWS.forEach(v => { $('#view-' + v).hidden = v !== name; });
+  $$('.main-nav a').forEach(a => a.classList.toggle('active', a.dataset.nav === name));
+  $('#mainNav').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false');
+  ({ home: renderHome, find: renderFind, history: renderHistory, partners: renderPartners, dashboard: renderDashboard, request: prepRequest, auth: () => { } }[name] || (() => { }))();
+  window.scrollTo({ top: 0 }); $('#main').focus({ preventScroll: true });
+  renderChrome();
+}
+function go(name) { if (location.hash === '#/' + name) route(); else location.hash = '#/' + name; }
+function renderChrome() {
+  const u = me();
+  const a = $('#authLink');
+  a.textContent = u ? 'Logout (' + u.name.split(' ')[0] + ')' : 'Login / Sign Up';
+  a.href = u ? '#/home' : '#/auth'; a.dataset.action = u ? 'logout' : '';
+  const n = u ? S.notifs.filter(x => x.userId === u.id && !x.read).length : 0;
+  const b = $('#notifCount'); b.hidden = !n; b.textContent = n;
+}
+
+/* ---------- home ---------- */
+let quickGroup = '';
+function donorCard(d, why, score, opts2 = {}) {
+  return `<article class="card donor-card">
+    <div class="dc-top"><div class="group-badge" aria-label="Blood group ${esc(d.group)}">${esc(d.group)}</div>
+      <div><h3>${esc(d.name)}</h3><div class="loc"><svg><use href="#i-pin"/></svg>${esc(d.area)}, ${esc(d.city)}</div></div>
+      ${score != null ? `<div class="score"><b>${score}</b>match score</div>` : ''}</div>
+    <div class="dc-meta">${d.available ? '<span class="badge b-ok">● Available</span>' : '<span class="badge b-mute">○ Unavailable</span>'}${verBadge(d.verified)}<span class="badge b-mute">Demo donor</span></div>
+    ${why ? `<div class="why"><b>Why this donor appears:</b><ul>${why.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
+    ${opts2.noAction ? '' : `<button class="btn btn-primary btn-sm" data-action="send-request" data-id="${d.id}" ${d.available ? '' : 'disabled'}>${d.available ? 'Send request' : 'Not available'}</button>`}
+  </article>`;
+}
+function renderHome() {
+  const feat = S.donors.filter(d => d.available && d.verified && d.city === 'Hyderabad').slice(0, 3);
+  $('#homeDonors').innerHTML = feat.map(d => donorCard(d, null, null)).join('');
+  const done = S.requests.filter(r => r.status === 'Completed').length;
+  const total = S.donations.length;
+  $('#homeStats').innerHTML = [[S.donors.length, 'Demo donors listed'], [S.requests.length, 'Demo requests tracked'], [done, 'Completed requests (demo)'], [total, 'Donations recorded (demo)']].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+}
+
+/* ---------- find blood ---------- */
+function openRequestsOfUser() { const u = me(); return u ? S.requests.filter(r => r.owner === u.id && !['Completed', 'Cancelled', 'Rejected'].includes(r.status)) : []; }
+function renderFind() {
+  const sel = $('#fLinked'); const cur = sel.value;
+  sel.innerHTML = '<option value="">— None (browse only) —</option>' + openRequestsOfUser().map(r => `<option value="${r.id}">${r.id} · ${esc(r.patient)} · ${r.group} ${esc(r.component)}</option>`).join('');
+  sel.value = openRequestsOfUser().some(r => r.id === cur) ? cur : '';
+  runFind();
+}
+function findQuery() {
+  return { group: $('#fGroup').value, component: $('#fComp').value, city: $('#fCity').value, area: $('#fArea').value, urgency: $('#fUrg').value, avail: $('#fAvail').value, ver: $('#fVer').value };
+}
+function runFind() {
+  const q = findQuery(); const res = matchDonors(q, S.donors);
+  $('#findCount').textContent = res.length + (res.length === 1 ? ' donor' : ' donors') + ' found';
+  $('#findHint').textContent = q.group ? `Compatible with ${q.group} · ${q.component}` : 'Showing all donors (no compatibility filter)';
+  $('#findResults').innerHTML = res.length ? res.map(r => donorCard(r.donor, r.why, r.score)).join('')
+    : empty('No matching donors', 'Try removing the area filter, choosing another component, or posting a request so donors can respond.', '<a class="btn btn-primary" href="#/request">Request Blood</a>');
+}
+function applyLinked() {
+  const r = reqById($('#fLinked').value); if (!r) return;
+  $('#fGroup').value = r.group; $('#fComp').value = r.component; $('#fCity').value = r.city;
+  $('#fArea').innerHTML = '<option value="">All areas</option>' + opts(AREAS[r.city] || [], r.area); $('#fArea').value = r.area; $('#fUrg').value = r.urgency;
+}
+function sendRequestToDonor(donorId) {
+  const u = me();
+  if (!u) { toast('Please log in first.', true); pendingRoute = 'find'; return go('auth'); }
+  const r = reqById($('#fLinked').value);
+  if (!r) { toast('Choose “Link to my request” first, or create a blood request.', true); return; }
+  const d = donorById(donorId);
+  let m = r.matches.find(x => x.donorId === donorId);
+  if (m && ['Request Sent', 'Accepted', 'Completed'].includes(m.status)) return toast('A request was already sent to this donor.', true);
+  if (!m) { m = { donorId, status: 'Matched' }; r.matches.push(m); }
+  m.status = 'Request Sent';
+  if (!['Accepted', 'Completed'].includes(r.status)) r.status = 'Request Sent';
+  stamp(r, 'Request sent to ' + d.name);
+  notify(d.userId, `New blood request ${r.id}: ${r.group} ${r.component} at ${r.hospital} (${r.urgency}).`);
+  notify(u.id, `Request sent to ${d.name} for ${r.id}. (In-app only — no SMS/WhatsApp is sent in this demo.)`);
+  log(`Request ${r.id} sent to ${d.name}`); save(); renderChrome();
+  toast('Request sent to ' + d.name + (d.userId ? '' : ' — demo donor; use request details to simulate a response.'));
+}
+
+/* ---------- request form ---------- */
+function prepRequest() {
+  const u = me();
+  if (u && !$('#rName').value) { $('#rName').value = u.role === 'patient' ? u.name : ''; $('#rPhone').value = u.phone || ''; }
+}
+function submitRequest(e) {
+  e.preventDefault();
+  const ok = validate({ scope: $('#requestForm'), items: [
+    ['rName', filled, 'Enter the patient name.'], ['rGroup', filled, 'Select the required blood group.'],
+    ['rUnits', el => +el.value >= 1 && +el.value <= 10, 'Units must be between 1 and 10.'],
+    ['rHosp', filled, 'Enter the hospital name.'], ['rHospLoc', filled, 'Enter the hospital location.'],
+    ['rDate', el => !!el.value && el.value >= today(), 'Choose today or a future date.'],
+    ['rPhone', phoneOk, 'Enter a valid number, e.g. 0300-1234567.']] });
+  if (!ok) return;
+  const u = me();
+  const r = {
+    id: 'BR-' + (1001 + S.requests.length + Math.floor(Math.random() * 90)), owner: u ? u.id : 'guest', patient: $('#rName').value.trim(), group: $('#rGroup').value, component: $('#rComp').value,
+    units: +$('#rUnits').value, city: $('#rCity').value, area: $('#rArea').value, hospital: $('#rHosp').value.trim(), hospLoc: $('#rHospLoc').value.trim(), urgency: $('#rUrg').value,
+    date: $('#rDate').value, phone: $('#rPhone').value.trim(), notes: $('#rNotes').value.trim(), hospVerified: false, status: 'Pending', created: nowISO(), matches: [], timeline: []
+  };
+  stamp(r, 'Request created (Pending)');
+  const ms = matchDonors({ group: r.group, component: r.component, city: r.city, area: '', urgency: r.urgency, avail: 'yes' }, S.donors).slice(0, 5);
+  if (ms.length) { r.matches = ms.map(m => ({ donorId: m.donor.id, status: 'Matched' })); r.status = 'Matched'; stamp(r, `Matched with ${ms.length} compatible donor${ms.length > 1 ? 's' : ''} in ${r.city}`); }
+  S.requests.unshift(r);
+  S.users.filter(x => x.role === 'hospital').forEach(h => notify(h.id, `New ${r.urgency.toLowerCase()} request ${r.id} needs hospital confirmation.`));
+  notify(u && u.id, ms.length ? `Request ${r.id} matched with ${ms.length} donor(s). Review and send requests.` : `Request ${r.id} created. No compatible available donors found yet.`);
+  log(`Request ${r.id} created (${r.group} ${r.component})`); save();
+  e.target.reset(); $('#rDate').value = today(); $('#rUnits').value = 1; $('#rArea').innerHTML = opts(AREAS[$('#rCity').value]);
+  toast(`Request ${r.id} submitted — ${ms.length} match${ms.length === 1 ? '' : 'es'} found.`);
+  go('find');
+  setTimeout(() => { renderFind(); if (u) { $('#fLinked').value = r.id; applyLinked(); runFind(); } else { $('#fGroup').value = r.group; $('#fComp').value = r.component; $('#fCity').value = r.city; runFind(); toast('Log in to send requests to donors.'); } }, 30);
+}
+
+/* ---------- donor registration ---------- */
+function submitDonor(e) {
+  e.preventDefault();
+  const ok = validate({ scope: $('#donorForm'), items: [
+    ['dName', filled, 'Enter your name.'], ['dGroup', filled, 'Select your blood group.'], ['dPhone', phoneOk, 'Enter a valid number, e.g. 0300-1234567.'],
+    ['dAge', el => el.checked, 'You must confirm you are 18 or older.']] });
+  if (!ok) return;
+  const u = me(); const full = $('#dName').value.trim().split(/\s+/);
+  const display = full[0] + (full[1] ? ' ' + full[1][0].toUpperCase() + '.' : '');
+  const d = { id: uid('d'), name: display, group: $('#dGroup').value, city: $('#dCity').value, area: $('#dArea').value, available: $('#dAvail').checked, verified: false, userId: u && u.role === 'donor' ? u.id : null, phone: $('#dPhone').value.trim(), last: $('#dLast').value };
+  S.donors.push(d);
+  S.verifications.unshift({ id: uid('v'), type: 'Donor', name: display, city: d.city, status: 'Pending', donorId: d.id });
+  S.users.filter(x => x.role === 'admin').forEach(a => notify(a.id, `New donor verification pending: ${display}.`));
+  notify(u && u.id, 'Donor profile registered. Verification is pending administrator review.');
+  log(`Donor ${display} registered`); save(); e.target.reset(); $('#dAvail').checked = true;
+  toast('Registered! Your profile shows as Unverified until an administrator reviews it.'); renderChrome(); go('find');
+}
+
+/* ---------- auth ---------- */
+async function sha(s) { try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); } catch { return btoa(s); } }
+function login(user) {
+  S.session = user.id; save(); toast('Welcome, ' + user.name.split(' ')[0] + '!');
+  const next = pendingRoute || 'dashboard'; pendingRoute = null; go(next); renderChrome();
+}
+function logout() { if (!confirm('Log out of SEHAT O AFEYAT?')) return; S.session = null; save(); toast('You have been logged out.'); go('home'); renderChrome(); }
+async function submitLogin(e) {
+  e.preventDefault();
+  if (!validate({ scope: $('#loginForm'), items: [['lEmail', el => /\S+@\S+\.\S+/.test(el.value), 'Enter a valid email.'], ['lPass', filled, 'Enter your password.']] })) return;
+  const u = S.users.find(x => x.email.toLowerCase() === $('#lEmail').value.trim().toLowerCase());
+  if (!u || u.demo || u.hash !== await sha($('#lPass').value)) { $('.err[data-for="lPass"]').textContent = u && u.demo ? 'Demo accounts use the quick-login buttons below.' : 'Email or password is incorrect.'; return; }
+  login(u);
+}
+async function submitSignup(e) {
+  e.preventDefault();
+  const role = $('#sRole').value;
+  if (!validate({ scope: $('#signupForm'), items: [
+    ['sName', filled, 'Enter your name.'], ['sEmail', el => /\S+@\S+\.\S+/.test(el.value), 'Enter a valid email.'], ['sPhone', phoneOk, 'Enter a valid number.'],
+    ['sGroup', el => role !== 'donor' || filled(el), 'Select your blood group.'], ['sPass', el => el.value.length >= 8, 'Use at least 8 characters.']] })) return;
+  const email = $('#sEmail').value.trim().toLowerCase();
+  if (S.users.some(x => x.email.toLowerCase() === email)) return void ($('.err[data-for="sEmail"]').textContent = 'An account with this email already exists.');
+  const u = { id: uid('u'), name: $('#sName').value.trim(), role, email, phone: $('#sPhone').value.trim(), city: $('#sCity').value, area: $('#sArea').value, verified: role === 'patient', hash: await sha($('#sPass').value) };
+  S.users.push(u);
+  if (role === 'donor') { const n = u.name.split(/\s+/); const d = { id: uid('d'), name: n[0] + (n[1] ? ' ' + n[1][0].toUpperCase() + '.' : ''), group: $('#sGroup').value, city: u.city, area: u.area, available: true, verified: false, userId: u.id, phone: u.phone, last: '' }; S.donors.push(d); S.verifications.unshift({ id: uid('v'), type: 'Donor', name: d.name, city: d.city, status: 'Pending', donorId: d.id }); }
+  if (role === 'hospital' || role === 'ngo') { const o = { id: uid('o'), name: u.name, type: role === 'hospital' ? 'Hospital' : 'NGO', city: u.city, verified: false, about: 'Newly registered — awaiting verification.', userId: u.id }; S.orgs.push(o); S.verifications.unshift({ id: uid('v'), type: o.type, name: u.name, city: u.city, status: 'Pending', orgId: o.id }); }
+  log(`New ${ROLES[role]} account: ${u.name}`); notify(u.id, 'Account created. ' + (u.verified ? '' : 'Verification is pending administrator review.'));
+  login(u);
+}
+
+/* ---------- history ---------- */
+let histTab = 'receive';
+function renderHistory() {
+  const u = me();
+  $('#historyGate').innerHTML = u ? '' : `<div class="card empty"><h3>Log in to see your history</h3><p>Try the demo patient or donor account to see example (fictional) records.</p><a class="btn btn-primary" href="#/auth">Login / Sign Up</a></div>`;
+  $('#historyBody').hidden = !u; if (!u) return;
+  if (u.role === 'donor' && !renderHistory.touched) histTab = 'donate';
+  $$('[data-htab]').forEach(t => { t.classList.toggle('active', t.dataset.htab === histTab); t.setAttribute('aria-selected', t.dataset.htab === histTab); });
+  const st = $('#hStatus').value, from = $('#hFrom').value, to = $('#hTo').value;
+  const inRange = d => (!from || d >= from) && (!to || d <= to);
+  if (histTab === 'receive') {
+    const all = S.requests.filter(r => r.owner === u.id);
+    const list = all.filter(r => (!st || r.status === st) && inRange(r.created.slice(0, 10)));
+    $('#histStats').innerHTML = stat([all.length, 'Total requests'], [all.filter(r => r.status === 'Accepted').length, 'Accepted'], [all.filter(r => r.status === 'Completed').length, 'Fulfilled'], [all.filter(r => r.status === 'Cancelled').length, 'Cancelled']);
+    $('#histList').innerHTML = list.length ? list.map(r => `<div class="rec"><div class="rec-main"><div class="group-badge">${esc(r.group)}</div><div><h3>${esc(r.id)} · ${esc(r.component)} × ${r.units}</h3><div class="meta">${esc(r.hospital)} · ${fmtDate(r.created)} · Matching: ${r.matches.length} donor${r.matches.length === 1 ? '' : 's'}</div></div></div><div class="row-gap" style="margin:0">${statusBadge(r.status)}<button class="btn btn-outline btn-sm" data-action="view-request" data-id="${r.id}">Details</button></div></div>`).join('')
+      : empty('No requests to show', all.length ? 'No records match these filters.' : 'You have not made any blood requests yet.', '<a class="btn btn-primary" href="#/request">Request Blood</a>');
+  } else {
+    const d = donorOf(u.id);
+    const all = d ? S.donations.filter(x => x.donorId === d.id) : [];
+    const list = all.filter(x => (!st || x.status === st) && inRange(x.date));
+    const incoming = d ? S.requests.flatMap(r => r.matches.filter(m => m.donorId === d.id && m.status === 'Request Sent').map(() => r)) : [];
+    const accepted = d ? S.requests.filter(r => r.matches.some(m => m.donorId === d.id && m.status === 'Accepted')).length : 0;
+    $('#histStats').innerHTML = stat([all.filter(x => x.status === 'Completed').length, 'Donations completed'], [incoming.length, 'Pending requests'], [accepted, 'Accepted, awaiting hospital'], [all.length ? fmtDate(all.map(x => x.date).sort().pop()) : '—', 'Last donation']);
+    $('#histList').innerHTML = !d ? empty('No donor profile', 'Register as a donor to build a donation history.', '<a class="btn btn-primary" href="#/donor">Become a Donor</a>')
+      : list.length ? list.map(x => `<div class="rec"><div class="rec-main"><div class="group-badge">${esc(d.group)}</div><div><h3>${esc(x.component)} donation</h3><div class="meta">${esc(x.place)} · ${fmtDate(x.date)}${x.requestId ? ' · Request ' + esc(x.requestId) : ''}</div></div></div><div class="row-gap" style="margin:0">${statusBadge(x.status)}<button class="btn btn-outline btn-sm" data-action="view-donation" data-id="${x.id}">Details</button></div></div>`).join('')
+      : empty('No donations to show', all.length ? 'No records match these filters.' : 'Your completed donations will appear here after a hospital marks a request Completed.');
+  }
+}
+const stat = (...a) => a.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+
+function requestDetail(id) {
+  const r = reqById(id); if (!r) return;
+  const u = me(); const canSim = u && (u.id === r.owner || u.role === 'admin' || u.role === 'hospital');
+  openModal(`<h2 id="modalTitle" class="h3">${esc(r.id)} — ${esc(r.patient)}</h2><p>${statusBadge(r.status)} ${urgBadge(r.urgency)} ${r.hospVerified ? '<span class="badge b-ok">Hospital confirmed</span>' : '<span class="badge b-warn">Hospital confirmation pending</span>'}</p>
+  <dl class="kv"><dt>Blood needed</dt><dd>${esc(r.group)} · ${esc(r.component)} × ${r.units} unit(s)</dd><dt>Hospital</dt><dd>${esc(r.hospital)} — ${esc(r.hospLoc)}</dd><dt>Area</dt><dd>${esc(r.area)}, ${esc(r.city)}</dd><dt>Needed by</dt><dd>${fmtDate(r.date)}</dd><dt>Contact</dt><dd>${esc(r.phone)}</dd><dt>Notes</dt><dd>${esc(r.notes) || '—'}</dd></dl>
+  <h3 class="h3">Matching progress</h3>
+  ${r.matches.length ? `<ul class="list-plain">${r.matches.map(m => { const d = donorById(m.donorId); if (!d) return ''; return `<li><span>${esc(d.name)} · ${esc(d.group)} · ${esc(d.area)}</span><span class="row-gap" style="margin:0">${statusBadge(m.status)}${canSim && !d.userId && m.status === 'Request Sent' ? `<button class="btn btn-outline btn-sm" data-action="respond" data-r="${r.id}" data-d="${d.id}" data-v="Accepted">Simulate accept</button><button class="btn btn-ghost btn-sm" data-action="respond" data-r="${r.id}" data-d="${d.id}" data-v="Rejected">Simulate reject</button>` : ''}</span></li>`; }).join('')}</ul><p class="small muted">“Simulate” buttons exist only because demo donors are fictional.</p>` : '<p class="muted">No donors matched yet.</p>'}
+  <h3 class="h3">Timeline</h3><ul class="timeline">${r.timeline.map(t => `<li>${esc(t.s)}<time>${fmtTime(t.t)}</time></li>`).join('')}</ul>
+  <div class="note small">Final medical compatibility is decided by the hospital or blood bank — never by this app or AI.</div>
+  ${u && u.id === r.owner && !['Completed', 'Cancelled'].includes(r.status) ? `<div class="row-gap"><button class="btn btn-danger" data-action="cancel-request" data-id="${r.id}">Cancel request</button></div>` : ''}`);
+}
+function donationDetail(id) {
+  const x = S.donations.find(d => d.id === id); if (!x) return;
+  openModal(`<h2 id="modalTitle" class="h3">${esc(x.component)} donation</h2><p>${statusBadge(x.status)} <span class="badge b-mute">Demo record</span></p>
+  <dl class="kv"><dt>Date</dt><dd>${fmtDate(x.date)}</dd><dt>Place</dt><dd>${esc(x.place)}</dd><dt>Component</dt><dd>${esc(x.component)}</dd><dt>Linked request</dt><dd>${esc(x.requestId) || 'Voluntary donation (no request)'}</dd></dl><p class="small muted">Fictional demo record — not a real medical record.</p>`);
+}
+
+/* ---------- status changes (shared across dashboards/history) ---------- */
+function setStatus(id, status) {
+  const r = reqById(id); if (!r || r.status === status) return;
+  r.status = status; stamp(r, `Status changed to ${status}`);
+  if (status === 'Completed') {
+    r.matches.filter(m => m.status === 'Accepted').forEach(m => {
+      m.status = 'Completed'; const d = donorById(m.donorId);
+      if (d) { S.donations.unshift({ id: uid('dn'), donorId: d.id, date: today(), place: r.hospital, component: r.component, status: 'Completed', requestId: r.id }); d.last = today(); notify(d.userId, `Your donation for ${r.id} was marked Completed. Thank you!`); }
+    });
+    stamp(r, 'Marked Completed by hospital');
+  }
+  if (status === 'Cancelled') r.matches.forEach(m => { if (m.status !== 'Completed') m.status = 'Cancelled'; });
+  notify(r.owner, `Request ${r.id} is now ${status}.`);
+  log(`Request ${r.id} → ${status}`); save(); renderChrome();
+}
+function respond(rid, did, v) {
+  const r = reqById(rid), m = r && r.matches.find(x => x.donorId === did), d = donorById(did); if (!m) return;
+  m.status = v; stamp(r, `${v} by ${d.name}`);
+  if (v === 'Accepted') r.status = 'Accepted';
+  else if (!r.matches.some(x => ['Request Sent', 'Accepted'].includes(x.status))) r.status = r.matches.some(x => x.status === 'Matched') ? 'Matched' : 'Rejected';
+  notify(r.owner, `${d.name} ${v.toLowerCase()} your request ${r.id}.`);
+  log(`${d.name} ${v.toLowerCase()} request ${r.id}`); save(); renderChrome(); toast(`Marked ${v}.`);
+}
+
+/* ---------- partners ---------- */
+function renderPartners() {
+  $('#orgList').innerHTML = S.orgs.map(o => `<article class="card"><div class="dc-top"><div class="group-badge"><svg width="26" height="26" style="color:#fff"><use href="#i-hosp"/></svg></div><div><h3>${esc(o.name)}</h3><div class="loc"><svg><use href="#i-pin"/></svg>${esc(o.city)}</div></div></div><p class="muted small" style="margin-top:.8rem">${esc(o.about)}</p><div class="dc-meta"><span class="badge b-info">${esc(o.type)}</span>${verBadge(o.verified)}<span class="badge b-mute">Placeholder</span></div></article>`).join('');
+}
+
+/* ---------- dashboards ---------- */
+function barChart(map) {
+  const max = Math.max(1, ...Object.values(map));
+  return `<div class="bars">${Object.entries(map).map(([k, v]) => `<div class="bar-row"><span>${esc(k)}</span><div class="bar"><i style="width:${v / max * 100}%"></i></div><b>${v}</b></div>`).join('')}</div>`;
+}
+const countBy = (arr, f, keys) => { const m = {}; (keys || []).forEach(k => m[k] = 0); arr.forEach(x => { const k = f(x); m[k] = (m[k] || 0) + 1; }); return m; };
+const activityList = () => `<ul class="list-plain">${S.activity.slice(0, 6).map(a => `<li><span>${esc(a.s)}</span><small class="muted">${fmtTime(a.t)}</small></li>`).join('')}</ul>`;
+const reqRow = r => `<li><span><b>${esc(r.id)}</b> · ${esc(r.group)} ${esc(r.component)} · ${esc(r.hospital)}</span><span class="row-gap" style="margin:0">${statusBadge(r.status)}<button class="btn btn-outline btn-sm" data-action="view-request" data-id="${r.id}">View</button></span></li>`;
+
+function profileCard(u) {
+  const d = donorOf(u.id);
+  return `<section class="card panel"><h3>Profile</h3><p>${verBadge(u.verified)} <span class="badge b-info">${ROLES[u.role]}</span>${u.demo ? ' <span class="badge b-mute">Demo account</span>' : ''}</p>
+  <form id="profileForm" class="form-grid" novalidate>
+    <label class="field"><span>Name</span><input id="pName" value="${esc(u.name)}"></label>
+    <label class="field"><span>Phone</span><input id="pPhone" value="${esc(u.phone)}"></label>
+    <label class="field"><span>City</span><select id="pCity">${opts(CITIES, u.city)}</select></label>
+    <label class="field"><span>Area</span><select id="pArea">${opts(AREAS[u.city] || [], u.area)}</select></label>
+    ${d ? `<p class="full muted small">Donor profile: ${esc(d.group)} · displayed as “${esc(d.name)}”.</p>` : ''}
+    <div class="full row-gap"><button class="btn btn-primary btn-sm" type="submit">Save profile</button><button class="btn btn-ghost btn-sm" type="button" data-action="logout">Logout</button></div></form></section>`;
+}
+function renderDashboard() {
+  const u = me(); if (!u) return;
+  const head = `<div class="dash-head"><div><p class="eyebrow">${ROLES[u.role]} dashboard · demo</p><h1>Hello, ${esc(u.name.split(' ')[0])}</h1></div><a class="btn btn-primary" href="#/request">Request Blood</a></div>`;
+  let body = '';
+  if (u.role === 'patient') {
+    const mine = S.requests.filter(r => r.owner === u.id);
+    body = `<div class="stats">${stat([mine.length, 'My requests'], [mine.filter(r => !['Completed', 'Cancelled', 'Rejected'].includes(r.status)).length, 'Active'], [mine.filter(r => r.status === 'Accepted').length, 'Accepted'], [mine.filter(r => r.status === 'Completed').length, 'Completed'])}</div>
+    <div class="dash-grid"><section class="card panel"><h3>My blood requests</h3>${mine.length ? `<ul class="list-plain">${mine.map(reqRow).join('')}</ul>` : empty('No requests yet', 'Create your first blood request.', '<a class="btn btn-primary" href="#/request">Request Blood</a>')}</section>${profileCard(u)}</div>`;
+  } else if (u.role === 'donor') {
+    const d = donorOf(u.id);
+    const incoming = d ? S.requests.filter(r => r.matches.some(m => m.donorId === d.id && m.status === 'Request Sent')) : [];
+    const done = d ? S.donations.filter(x => x.donorId === d.id && x.status === 'Completed').length : 0;
+    body = d ? `<div class="stats">${stat([done, 'Donations completed'], [incoming.length, 'Incoming requests'], [d.group, 'Blood group'], [d.available ? 'Available' : 'Unavailable', 'My status'])}</div>
+    <div class="dash-grid"><section class="card panel"><h3>Incoming requests</h3>${incoming.length ? `<ul class="list-plain">${incoming.map(r => `<li><span><b>${esc(r.id)}</b> · ${esc(r.group)} ${esc(r.component)} · ${esc(r.hospital)} · ${urgBadge(r.urgency)}</span><span class="row-gap" style="margin:0"><button class="btn btn-primary btn-sm" data-action="respond" data-r="${r.id}" data-d="${d.id}" data-v="Accepted">Accept</button><button class="btn btn-ghost btn-sm" data-action="respond" data-r="${r.id}" data-d="${d.id}" data-v="Rejected">Decline</button></span></li>`).join('')}</ul>` : '<p class="muted">No pending requests right now.</p>'}
+      <div class="row-gap"><button class="btn btn-outline btn-sm" data-action="toggle-avail">${d.available ? 'Mark myself unavailable' : 'Mark myself available'}</button><a class="btn btn-ghost btn-sm" href="#/history">View donation history</a></div></section>${profileCard(u)}</div>`
+      : `<div class="card">${empty('No donor profile', 'Complete donor registration to appear in search.', '<a class="btn btn-primary" href="#/donor">Become a Donor</a>')}</div><div class="dash-grid even">${profileCard(u)}</div>`;
+  } else if (u.role === 'hospital') {
+    const R = S.requests;
+    body = `<div class="stats">${stat([R.length, 'Total requests'], [R.filter(r => r.status === 'Pending').length, 'Pending'], [R.filter(r => r.status === 'Matched').length, 'Matched'], [R.filter(r => r.status === 'Accepted').length, 'Incoming donor acceptances'], [R.filter(r => r.status === 'Completed').length, 'Completed'])}</div>
+    <section class="panel" style="margin-top:1.2rem"><h3>Blood requests</h3><div class="toolbar"><input id="hSearch" type="search" placeholder="Search by ID, patient, hospital…" aria-label="Search requests"><select id="hStatusF" aria-label="Filter by status"><option value="">All statuses</option>${opts(STATUSES)}</select></div><div class="table-wrap" id="hospTable"></div></section>
+    <div class="dash-grid even"><section class="card panel"><h3>Recent activity</h3>${activityList()}</section>${profileCard(u)}</div>`;
+  } else if (u.role === 'ngo') {
+    body = `<div class="stats">${stat([S.campaigns.filter(c => c.status === 'Active').length, 'Active campaigns'], [S.campaigns.filter(c => c.status === 'Completed').length, 'Completed campaigns'], [S.assist.filter(a => a.status !== 'Resolved').length, 'Open assistance requests'], [S.campaigns.reduce((n, c) => n + c.donors, 0), 'Campaign donors (demo)'])}</div>
+    <div class="dash-grid"><section class="card panel"><h3>Blood donation campaigns</h3><ul class="list-plain">${S.campaigns.map(c => `<li><span><b>${esc(c.title)}</b><br><small class="muted">${esc(c.city)} · ${fmtDate(c.date)} · with ${esc(c.hospital)} · ${c.donors}/${c.goal} donors</small></span><span class="row-gap" style="margin:0"><span class="badge ${c.status === 'Active' ? 'b-info' : 'b-ok'}">${c.status}</span><button class="btn btn-outline btn-sm" data-action="campaign-toggle" data-id="${c.id}">${c.status === 'Active' ? 'Mark completed' : 'Reopen'}</button></span></li>`).join('')}</ul>
+      <form id="campForm" class="form-grid" novalidate style="margin-top:1rem"><label class="field"><span>New campaign title *</span><input id="cTitle"><small class="err" data-for="cTitle"></small></label><label class="field"><span>Date *</span><input id="cDate" type="date" min="${today()}"><small class="err" data-for="cDate"></small></label><label class="field"><span>City</span><select id="cCity">${opts(CITIES, u.city)}</select></label><label class="field"><span>Donor goal</span><input id="cGoal" type="number" min="1" value="50"></label><div class="full"><button class="btn btn-primary btn-sm" type="submit">Create campaign</button></div></form></section>
+    <section class="card panel"><h3>Patient assistance requests</h3><ul class="list-plain">${S.assist.map(a => `<li><span><b>${esc(a.name)}</b><br><small class="muted">${esc(a.need)} · ${esc(a.city)}</small></span><select data-assist="${a.id}" aria-label="Status for ${esc(a.name)}">${opts(['Open', 'In Progress', 'Resolved'], a.status)}</select></li>`).join('')}</ul><p class="small muted">Demo only — no financial transactions or real aid distribution.</p></section></div>
+    <div class="dash-grid even"><section class="card panel"><h3>Hospital collaboration</h3><ul class="list-plain">${S.orgs.filter(o => o.type === 'Hospital').map(o => `<li><span>${esc(o.name)} · ${esc(o.city)}</span>${verBadge(o.verified)}</li>`).join('')}</ul></section>${profileCard(u)}</div>`;
+  } else {
+    const users = countBy(S.users, x => ROLES[x.role], Object.values(ROLES));
+    const pend = S.verifications.filter(v => v.status === 'Pending');
+    body = `<div class="stats">${stat([S.users.length, 'Registered users'], [S.requests.length, 'Blood requests'], [S.donors.filter(d => d.available).length + '/' + S.donors.length, 'Donors available'], [pend.length, 'Pending verifications'], [S.flagged.filter(f => f.status === 'Open').length, 'Open reports'])}</div>
+    <div class="dash-grid even"><section class="card panel"><h3>Users by role</h3>${barChart(users)}</section><section class="card panel"><h3>Requests by status</h3>${barChart(countBy(S.requests, r => r.status, STATUSES))}</section></div>
+    <div class="dash-grid even"><section class="card panel"><h3>Verification queue</h3>${pend.length ? `<ul class="list-plain">${pend.map(v => `<li><span><b>${esc(v.name)}</b> · ${esc(v.type)} · ${esc(v.city)}</span><span class="row-gap" style="margin:0"><button class="btn btn-primary btn-sm" data-action="ver" data-id="${v.id}" data-v="Approved">Approve</button><button class="btn btn-danger btn-sm" data-action="ver" data-id="${v.id}" data-v="Rejected">Reject</button></span></li>`).join('')}</ul>` : '<p class="muted">No pending verifications.</p>'}</section>
+    <section class="card panel"><h3>Reported / suspicious</h3>${S.flagged.map(f => `<li style="list-style:none;padding:.5rem 0;border-bottom:1px solid var(--pale)"><b>${esc(f.target)}</b><br><small class="muted">${esc(f.reason)}</small><div class="row-gap">${f.status === 'Open' ? `<button class="btn btn-outline btn-sm" data-action="flag" data-id="${f.id}" data-v="Dismissed">Dismiss</button><button class="btn btn-danger btn-sm" data-action="flag" data-id="${f.id}" data-v="Suspended (demo)">Suspend (demo)</button>` : `<span class="badge b-mute">${esc(f.status)}</span>`}</div></li>`).join('')}</section></div>
+    <div class="dash-grid even"><section class="card panel"><h3>Hospitals &amp; NGOs</h3><ul class="list-plain">${S.orgs.map(o => `<li><span>${esc(o.name)} <small class="muted">· ${esc(o.type)}</small></span><span class="row-gap" style="margin:0">${verBadge(o.verified)}<button class="btn btn-ghost btn-sm" data-action="org-toggle" data-id="${o.id}">${o.verified ? 'Unverify' : 'Verify'}</button></span></li>`).join('')}</ul></section><section class="card panel"><h3>Recent activity</h3>${activityList()}</section></div>
+    <div class="note" style="margin-top:1rem">Demo admin actions change local demo data only. In production, admin permissions must be enforced server-side.</div>`;
+  }
+  $('#dashBody').innerHTML = head + body;
+  if (u.role === 'hospital') { drawHospTable(); $('#hSearch').addEventListener('input', drawHospTable); $('#hStatusF').addEventListener('change', drawHospTable); }
+  const pc = $('#pCity'); if (pc) pc.addEventListener('change', () => { $('#pArea').innerHTML = opts(AREAS[pc.value] || []); });
+}
+function drawHospTable() {
+  const q = ($('#hSearch').value || '').toLowerCase(), st = $('#hStatusF').value;
+  const list = S.requests.filter(r => (!st || r.status === st) && (!q || [r.id, r.patient, r.hospital, r.group, r.city].join(' ').toLowerCase().includes(q)));
+  $('#hospTable').innerHTML = list.length ? `<table><thead><tr><th>ID</th><th>Patient</th><th>Need</th><th>Urgency</th><th>Donor matches</th><th>Hospital check</th><th>Status</th><th></th></tr></thead><tbody>${list.map(r => `<tr><td><b>${esc(r.id)}</b><br><small class="muted">${fmtDate(r.created)}</small></td><td>${esc(r.patient)}<br><small class="muted">${esc(r.area)}, ${esc(r.city)}</small></td><td>${esc(r.group)} · ${esc(r.component)} × ${r.units}</td><td>${urgBadge(r.urgency)}</td><td>${r.matches.length}</td><td>${r.hospVerified ? '<span class="badge b-ok">Confirmed</span>' : `<button class="btn btn-outline btn-sm" data-action="hosp-confirm" data-id="${r.id}">Confirm</button>`}</td><td><select data-status="${r.id}" aria-label="Status for ${esc(r.id)}">${opts(STATUSES, r.status)}</select></td><td><button class="btn btn-ghost btn-sm" data-action="view-request" data-id="${r.id}">Details</button></td></tr>`).join('')}</tbody></table>` : empty('No requests found', 'Adjust the search or status filter.');
+}
+
+/* ---------- notifications ---------- */
+function renderNotifs() {
+  const u = me(); const p = $('#notifPanel');
+  if (!u) { p.innerHTML = '<h4>Notifications</h4><p class="small muted" style="padding:.6rem">Log in to see notifications.</p>'; return; }
+  const list = S.notifs.filter(n => n.userId === u.id).slice(0, 15);
+  p.innerHTML = `<h4>Notifications <span class="muted small">(in-app only)</span></h4>` + (list.length ? list.map(n => `<div class="notif-item${n.read ? '' : ' unread'}">${esc(n.text)}<time>${fmtTime(n.time)}</time></div>`).join('') : '<p class="small muted" style="padding:.6rem">Nothing yet.</p>');
+}
+function toggleNotifs() {
+  const p = $('#notifPanel'), open = p.hidden; p.hidden = !open; $('#notifBtn').setAttribute('aria-expanded', open);
+  if (open) { renderNotifs(); const u = me(); if (u) { S.notifs.forEach(n => { if (n.userId === u.id) n.read = true; }); save(); setTimeout(renderChrome, 400); } }
+}
+
+/* ---------- AI report reader ---------- */
+const Rep = { file: null, text: '' };
+const MAX = 8 * 1024 * 1024;
+function repStatus(msg, cls, spin) { const s = $('#repStatus'); s.className = 'status-line ' + (cls || ''); s.innerHTML = (spin ? '<span class="spin"></span>' : '') + esc(msg); }
+function loadScript(src) { return new Promise((res, rej) => { if ([...document.scripts].some(s => s.src === src)) return res(); const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('Could not load ' + src)); document.head.appendChild(s); }); }
+function repReset(keepStatus) {
+  Rep.file = null; Rep.text = ''; $('#repFile').value = ''; $('#repText').value = ''; $('#repTextWrap').hidden = true; $('#repFileInfo').hidden = true; $('#repResult').hidden = true; $('#repResult').innerHTML = ''; $('#repErr').textContent = '';
+  $('#repExtract').disabled = true; $('#repAnalyze').disabled = true; if (!keepStatus) repStatus('');
+}
+function repPick(file) {
+  $('#repErr').textContent = '';
+  if (!file) return;
+  const okType = ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type);
+  if (!okType) { repReset(true); $('#repErr').textContent = 'Unsupported file type. Please upload a PDF, JPG or PNG.'; return; }
+  if (file.size > MAX) { repReset(true); $('#repErr').textContent = 'File is larger than 8 MB. Please upload a smaller file.'; return; }
+  Rep.file = file; $('#repFileInfo').hidden = false; $('#repFileInfo').textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB`;
+  $('#repExtract').disabled = false; $('#repAnalyze').disabled = true; $('#repTextWrap').hidden = true; $('#repResult').hidden = true; repStatus('File ready. Tick consent, then extract text.');
+}
+async function repExtract() {
+  if (!$('#repConsent').checked) { $('#repErr').textContent = 'Please give consent before processing a report.'; return; }
+  $('#repErr').textContent = ''; const f = Rep.file; if (!f) return;
+  $('#repExtract').disabled = true;
+  try {
+    let text = '';
+    if (f.type === 'application/pdf') {
+      repStatus('Reading PDF in your browser…', '', true);
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const pdf = await window.pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
+      for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { const pg = await pdf.getPage(i); const c = await pg.getTextContent(); text += c.items.map(x => x.str).join(' ') + '\n'; }
+      if (text.trim().length < 40) throw new Error('No readable text found in this PDF (it may be a scan). Try uploading a clear JPG or PNG image instead.');
+    } else {
+      repStatus('Running OCR on the image in your browser (can take ~20 seconds)…', '', true);
+      await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+      const r = await window.Tesseract.recognize(f, 'eng'); text = r.data.text;
+      if (text.trim().length < 20) throw new Error('OCR could not read enough text. Try a sharper, well-lit image.');
+    }
+    Rep.text = text.trim(); $('#repText').value = Rep.text; $('#repTextWrap').hidden = false; $('#repAnalyze').disabled = false;
+    repStatus('Text extracted. Review it, fix any OCR mistakes, then click “Explain with AI”.', 'ok');
+  } catch (err) { repStatus(err.message || 'Extraction failed.', 'error'); }
+  $('#repExtract').disabled = false;
+}
+async function repAnalyze() {
+  if (!$('#repConsent').checked) { $('#repErr').textContent = 'Please give consent before processing a report.'; return; }
+  const text = $('#repText').value.trim(); if (text.length < 20) return repStatus('There is not enough text to analyze.', 'error');
+  $('#repAnalyze').disabled = true; $('#repResult').hidden = true; repStatus('Sending text to the AI service and preparing your explanation…', '', true);
+  try {
+    const res = await fetch('/api/analyze-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, language: $('#repLang').value }) });
+    let data = null; try { data = await res.json(); } catch { /* non-JSON */ }
+    if (!res.ok || !data || data.error) throw new Error((data && data.error) || (res.status === 404 ? 'The AI function was not found. Deploy the /api folder (e.g. on Vercel) and set ANTHROPIC_API_KEY — see README.' : 'The AI service returned an error (' + res.status + ').'));
+    renderReport(data); repStatus('Explanation ready. This is informational only — discuss it with your doctor.', 'ok');
+  } catch (err) { repStatus('AI analysis did not run: ' + err.message, 'error'); }
+  $('#repAnalyze').disabled = false;
+}
+function renderReport(d) {
+  const arr = x => Array.isArray(x) ? x : [];
+  const tests = arr(d.tests), outs = arr(d.outsideRange), terms = arr(d.terms), qs = arr(d.questions), lims = arr(d.limitations);
+  const sec = (title, tag, inner) => `<section class="card rr-card"><h3>${title} <span class="tag ${tag === 'ex' ? 'tag-ex' : 'tag-ai'}">${tag === 'ex' ? 'Extracted from report' : 'AI explanation'}</span></h3>${inner}</section>`;
+  $('#repResult').innerHTML =
+    sec('Report Summary', 'ai', `<p>${esc(d.summary || 'No summary returned.')}</p>${d.summaryUrdu ? `<div class="ur-text" lang="ur" dir="rtl">${esc(d.summaryUrdu)}</div>` : ''}`) +
+    sec('Test Results', 'ex', tests.length ? `<div class="table-wrap"><table><thead><tr><th>Test</th><th>Value</th><th>Reference range</th><th>Date</th></tr></thead><tbody>${tests.map(t => `<tr><td>${esc(t.name)}</td><td><b>${esc(t.value)}</b> ${esc(t.unit)}</td><td>${esc(t.referenceRange || 'Not stated')}</td><td>${esc(t.date || '—')}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No structured test values were found in the text.</p>') +
+    sec('Medical Terms Explained', 'ai', terms.length ? `<dl class="terms">${terms.map(t => `<dt>${esc(t.term)}</dt><dd>${esc(t.explanation)}${t.explanationUrdu ? `<div class="ur-text" lang="ur" dir="rtl">${esc(t.explanationUrdu)}</div>` : ''}</dd>`).join('')}</dl>` : '<p class="muted">No terms to explain.</p>') +
+    sec('Values Outside Reference Ranges', 'ex', outs.length ? `<ul class="list-plain">${outs.map(o => `<li><span><span class="flag-out">${esc(o.name)}: ${esc(o.value)}</span> <small class="muted">(range in report: ${esc(o.referenceRange || 'n/a')}; flagged ${esc(o.flag || 'by report')})</small><br>${esc(o.explanation)}</span></li>`).join('')}</ul><p class="small muted">Only values the report itself marks or shows as outside its stated range are listed. A single value is not a diagnosis.</p>` : '<p class="muted">The report text does not show any values marked outside its reference ranges.</p>') +
+    sec('Questions to Ask Your Doctor', 'ai', qs.length ? `<ul>${qs.map(q => `<li>${esc(q)}</li>`).join('')}</ul>` : '<p class="muted">—</p>') +
+    sec('Important Limitations', 'ai', `<ul>${(lims.length ? lims : ['This explanation is AI-generated and may contain mistakes.']).map(l => `<li>${esc(l)}</li>`).join('')}<li>This tool does not diagnose disease, prescribe treatment, or replace a qualified doctor.</li><li>Always confirm values against the original report.</li></ul>`);
+  $('#repResult').hidden = false; $('#repResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-action]'); const nav = e.target.closest('a[data-signup]');
+  if (nav) { setTimeout(() => { $('[data-atab="signup"]').click(); $('#sRole').value = nav.dataset.signup; $('#sRole').dispatchEvent(new Event('change')); }, 30); }
+  if (!e.target.closest('.notif-wrap')) { $('#notifPanel').hidden = true; $('#notifBtn').setAttribute('aria-expanded', 'false'); }
+  if (!t) return;
+  const a = t.dataset.action, id = t.dataset.id;
+  switch (a) {
+    case 'quick-group': quickGroup = quickGroup === t.dataset.g ? '' : t.dataset.g; $$('#homeGroups .chip').forEach(c => c.setAttribute('aria-checked', c.dataset.g === quickGroup)); break;
+    case 'send-request': sendRequestToDonor(id); break;
+    case 'view-request': requestDetail(id); break;
+    case 'view-donation': donationDetail(id); break;
+    case 'cancel-request': if (confirm('Cancel this request? This cannot be undone.')) { setStatus(id, 'Cancelled'); closeModal(); toast('Request cancelled.'); route(); } break;
+    case 'respond': respond(t.dataset.r, t.dataset.d, t.dataset.v); if ($('#modal').open) requestDetail(t.dataset.r); route(); break;
+    case 'toggle-avail': { const d = donorOf(S.session); d.available = !d.available; log(`${d.name} set availability: ${d.available ? 'available' : 'unavailable'}`); save(); toast('Availability updated.'); renderDashboard(); break; }
+    case 'hosp-confirm': { const r = reqById(id); r.hospVerified = true; stamp(r, 'Hospital confirmed the request'); notify(r.owner, `Hospital confirmed request ${r.id}.`); log(`Hospital confirmed ${r.id}`); save(); drawHospTable(); toast('Request confirmed.'); break; }
+    case 'campaign-toggle': { const c = S.campaigns.find(x => x.id === id); c.status = c.status === 'Active' ? 'Completed' : 'Active'; log(`Campaign "${c.title}" → ${c.status}`); save(); renderDashboard(); break; }
+    case 'ver': { const v = S.verifications.find(x => x.id === id); v.status = t.dataset.v; const ok = v.status === 'Approved'; if (v.donorId) { const d = donorById(v.donorId); if (d) { d.verified = ok; notify(d.userId, `Your donor profile was ${v.status.toLowerCase()}.`); } } if (v.orgId) { const o = S.orgs.find(x => x.id === v.orgId); if (o) { o.verified = ok; notify(o.userId, `Your organisation was ${v.status.toLowerCase()}.`); } } log(`Verification ${v.name}: ${v.status}`); save(); renderDashboard(); toast('Verification ' + v.status.toLowerCase() + '.'); break; }
+    case 'flag': { const f = S.flagged.find(x => x.id === id); f.status = t.dataset.v; log(`Report on ${f.target}: ${f.status}`); save(); renderDashboard(); break; }
+    case 'org-toggle': { const o = S.orgs.find(x => x.id === id); o.verified = !o.verified; log(`${o.name} verification: ${o.verified}`); save(); renderDashboard(); break; }
+    case 'demo-login': { const u = S.users.find(x => x.id === 'u-' + t.dataset.role); if (u) login(u); break; }
+    case 'logout': e.preventDefault(); logout(); break;
+    case 'close-modal': closeModal(); break;
+  }
+});
+document.addEventListener('change', e => {
+  const s = e.target;
+  if (s.dataset.status) { setStatus(s.dataset.status, s.value); toast(`${s.dataset.status} → ${s.value}`); drawHospTable(); }
+  if (s.dataset.assist) { S.assist.find(a => a.id === s.dataset.assist).status = s.value; log('Assistance request updated: ' + s.value); save(); toast('Assistance status updated.'); }
+});
+document.addEventListener('submit', e => {
+  if (e.target.id === 'profileForm') {
+    e.preventDefault(); const u = me(); u.name = $('#pName').value.trim() || u.name; u.phone = $('#pPhone').value.trim(); u.city = $('#pCity').value; u.area = $('#pArea').value;
+    const d = donorOf(u.id); if (d) { d.city = u.city; d.area = u.area; } save(); toast('Profile saved.'); renderChrome(); renderDashboard();
+  }
+  if (e.target.id === 'campForm') {
+    e.preventDefault(); if (!validate({ scope: e.target, items: [['cTitle', filled, 'Enter a title.'], ['cDate', filled, 'Choose a date.']] })) return;
+    S.campaigns.unshift({ id: uid('c'), title: $('#cTitle').value.trim(), city: $('#cCity').value, date: $('#cDate').value, goal: +$('#cGoal').value || 50, donors: 0, status: 'Active', hospital: 'To be confirmed' });
+    log('Campaign created: ' + $('#cTitle').value.trim()); save(); toast('Campaign created.'); renderDashboard();
+  }
+});
+
+function wire() {
+  initSelects();
+  $('#menuBtn').addEventListener('click', () => { const o = $('#mainNav').classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', o); });
+  $('#notifBtn').addEventListener('click', ev => { ev.stopPropagation(); toggleNotifs(); });
+  $('#quickForm').addEventListener('submit', e => { e.preventDefault(); go('find'); setTimeout(() => { $('#fGroup').value = quickGroup; $('#fComp').value = $('#quickComp').value; $('#fCity').value = $('#quickCity').value; $('#fCity').dispatchEvent(new Event('change')); runFind(); }, 30); });
+  $('#findForm').addEventListener('submit', e => { e.preventDefault(); runFind(); });
+  $('#findForm').addEventListener('reset', () => setTimeout(() => { $('#fArea').innerHTML = '<option value="">All areas</option>'; runFind(); }, 0));
+  $('#fLinked').addEventListener('change', () => { applyLinked(); runFind(); });
+  ['fGroup', 'fComp', 'fCity', 'fArea', 'fUrg', 'fAvail', 'fVer'].forEach(id => $('#' + id).addEventListener('change', runFind));
+  $('#requestForm').addEventListener('submit', submitRequest);
+  $('#donorForm').addEventListener('submit', submitDonor);
+  $('#loginForm').addEventListener('submit', submitLogin);
+  $('#signupForm').addEventListener('submit', submitSignup);
+  $('#sRole').addEventListener('change', () => { $('#sGroupWrap').hidden = $('#sRole').value !== 'donor'; });
+  $$('[data-atab]').forEach(b => b.addEventListener('click', () => { $$('[data-atab]').forEach(x => x.classList.toggle('active', x === b)); $('#loginForm').hidden = b.dataset.atab !== 'login'; $('#signupForm').hidden = b.dataset.atab !== 'signup'; }));
+  $$('[data-htab]').forEach(b => b.addEventListener('click', () => { histTab = b.dataset.htab; renderHistory.touched = true; renderHistory(); }));
+  ['hStatus', 'hFrom', 'hTo'].forEach(id => $('#' + id).addEventListener('change', renderHistory));
+  $('#histFilter').addEventListener('reset', () => setTimeout(renderHistory, 0));
+  // report
+  const dz = $('#dropzone');
+  $('#repFile').addEventListener('change', e => repPick(e.target.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
+  dz.addEventListener('drop', e => repPick(e.dataTransfer.files[0]));
+  $('#repExtract').addEventListener('click', repExtract);
+  $('#repAnalyze').addEventListener('click', repAnalyze);
+  $('#repClear').addEventListener('click', () => { repReset(); toast('File and report data removed from this page.'); });
+  $('#modal').addEventListener('click', e => { if (e.target === $('#modal')) closeModal(); });
+  window.addEventListener('hashchange', route);
+  window.addEventListener('storage', ev => { if (ev.key === KEY) { load(); route(); } });
+}
+wire(); route();
+})();
+
+</script>
+</body>
+</html>

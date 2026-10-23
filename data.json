@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": "u-ece0f384",
+      "name": "Administrator",
+      "email": "admin@example.org",
+      "role": "admin",
+      "phone": "",
+      "city": "",
+      "area": "",
+      "pw": "02b76136570b32c2:e810312872da5d2fbbe6cb2d2d66137cbedf2b0af006b39a13d2c474464e0466"
+    }
+  ],
+  "donors": [],
+  "requests": [],
+  "donations": [],
+  "notifications": [],
+  "campaigns": [],
+  "sessions": {}
+}
